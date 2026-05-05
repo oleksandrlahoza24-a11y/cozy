@@ -1,156 +1,1701 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iPad Code Pro</title>
-    
-    <!-- CodeMirror 6 Core -->
-    <script type="module">
-        import {EditorView, basicSetup} from "https://codemirror.net/6/codemirror.js";
-        import {javascript} from "https://codemirror.net/6/lang-javascript.js";
-        import {oneDark} from "https://codemirror.net/6/theme-one-dark.js";
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CodePad — iPad IDE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS VARIABLES — THEME SYSTEM
+   ============================================================ */
+:root {
+  /* Default: Dark Minimal */
+  --bg:          #0d0d0f;
+  --bg2:         #141416;
+  --bg3:         #1c1c1f;
+  --border:      rgba(255,255,255,0.07);
+  --text:        #e8e8ed;
+  --text2:       #888896;
+  --accent:      #7c6af5;
+  --accent2:     #a89dff;
+  --accent-glow: rgba(124,106,245,0.25);
+  --kb-bg:       #1a1a1e;
+  --kb-key:      #2a2a30;
+  --kb-key-hover:#3a3a44;
+  --kb-text:     #e8e8ed;
+  --kb-special:  #1e1e25;
+  --shadow:      0 4px 24px rgba(0,0,0,0.5);
+  --radius:      10px;
+  --font-ui:     'Syne', sans-serif;
+  --font-code:   'JetBrains Mono', monospace;
 
-        // Initialize Editor
-        const editor = new EditorView({
-            doc: "// Start coding on your iPad...\nfunction hello() {\n  console.log('Hello iPad!');\n}",
-            extensions: [
-                basicSetup,
-                javascript(),
-                oneDark
-            ],
-            parent: document.getElementById("editor")
-        });
+  /* syntax colors */
+  --syn-keyword:  #c792ea;
+  --syn-string:   #c3e88d;
+  --syn-comment:  #546e7a;
+  --syn-number:   #f78c6c;
+  --syn-function: #82aaff;
+  --syn-type:     #ffcb6b;
+  --syn-operator: #89ddff;
+}
 
-        window.view = editor; // Export for keyboard access
-    </script>
+/* Glass Dark */
+[data-theme="glass-dark"] {
+  --bg:         rgba(12,12,18,0.85);
+  --bg2:        rgba(20,20,30,0.7);
+  --bg3:        rgba(30,30,45,0.65);
+  --border:     rgba(120,110,200,0.2);
+  --text:       #eeeef8;
+  --text2:      #9999bb;
+  --accent:     #a78bfa;
+  --accent2:    #c4b5fd;
+  --accent-glow:rgba(167,139,250,0.3);
+  --kb-bg:      rgba(18,18,28,0.92);
+  --kb-key:     rgba(50,50,80,0.7);
+  --kb-key-hover:rgba(80,80,120,0.8);
+  --kb-special: rgba(30,30,50,0.8);
+  --shadow:     0 8px 40px rgba(0,0,0,0.6);
+}
 
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --panel-bg: rgba(30, 41, 59, 0.7);
-            --text-color: #f8fafc;
-            --accent: #38bdf8;
-            --blur: 12px;
-            --border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+/* Minimal Dark */
+[data-theme="minimal-dark"] {
+  --bg:         #0a0a0a;
+  --bg2:        #111;
+  --bg3:        #1a1a1a;
+  --border:     rgba(255,255,255,0.06);
+  --text:       #f0f0f0;
+  --text2:      #666;
+  --accent:     #fff;
+  --accent2:    #ccc;
+  --accent-glow:rgba(255,255,255,0.1);
+  --kb-bg:      #111;
+  --kb-key:     #222;
+  --kb-key-hover:#333;
+  --kb-special: #181818;
+}
 
-        /* THEMES */
-        body.theme-white { --bg-color: #ffffff; --panel-bg: #f1f5f9; --text-color: #0f172a; --border: 1px solid #e2e8f0; }
-        body.theme-dark { --bg-color: #000000; --panel-bg: #111111; --text-color: #ffffff; }
-        body.theme-minimal { --bg-color: #ffffff; --panel-bg: transparent; --text-color: #333; --border: none; --blur: 0px; }
-        body.theme-glass { --bg-color: transparent; background: linear-gradient(135deg, #1e293b, #0f172a); }
+/* White Minimal */
+[data-theme="minimal-white"] {
+  --bg:         #fafafa;
+  --bg2:        #f0f0f0;
+  --bg3:        #e8e8e8;
+  --border:     rgba(0,0,0,0.08);
+  --text:       #111;
+  --text2:      #666;
+  --accent:     #2563eb;
+  --accent2:    #3b82f6;
+  --accent-glow:rgba(37,99,235,0.15);
+  --kb-bg:      #e8e8e8;
+  --kb-key:     #d4d4d4;
+  --kb-key-hover:#bdbdbd;
+  --kb-text:    #111;
+  --kb-special: #ccc;
+  --shadow:     0 4px 24px rgba(0,0,0,0.12);
+  --syn-keyword:#7c3aed; --syn-string:#16a34a;
+  --syn-comment:#94a3b8; --syn-number:#dc2626;
+  --syn-function:#2563eb; --syn-type:#d97706;
+  --syn-operator:#0891b2;
+}
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color);
-            overflow: hidden;
-        }
+/* Glass White */
+[data-theme="glass-white"] {
+  --bg:         rgba(255,255,255,0.75);
+  --bg2:        rgba(245,245,250,0.7);
+  --bg3:        rgba(235,235,245,0.65);
+  --border:     rgba(100,100,200,0.15);
+  --text:       #1a1a2e;
+  --text2:      #6666aa;
+  --accent:     #4f46e5;
+  --accent2:    #7c3aed;
+  --accent-glow:rgba(79,70,229,0.2);
+  --kb-bg:      rgba(240,240,252,0.92);
+  --kb-key:     rgba(220,220,240,0.8);
+  --kb-key-hover:rgba(200,200,230,0.9);
+  --kb-text:    #1a1a2e;
+  --kb-special: rgba(200,200,225,0.7);
+  --shadow:     0 8px 40px rgba(0,0,0,0.15);
+  --syn-keyword:#7c3aed; --syn-string:#16a34a;
+  --syn-comment:#94a3b8; --syn-number:#dc2626;
+  --syn-function:#2563eb; --syn-type:#d97706;
+}
 
-        /* Layout */
-        .app-container { display: flex; flex-direction: column; height: 100vh; }
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background 0.3s, color 0.3s;
+}
 
-        /* Toolbar */
-        .toolbar {
-            height: 60px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; background: var(--panel-bg); backdrop-filter: blur(var(--blur));
-            border-bottom: var(--border); z-index: 10;
-        }
+/* Glass background effect */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 30% -10%, var(--accent-glow), transparent 60%),
+              radial-gradient(ellipse 60% 50% at 80% 110%, rgba(124,106,245,0.1), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-        /* Editor Area */
-        #editor { flex: 1; overflow: auto; font-size: 16px; /* Prevents iPad zoom */ }
-        .cm-editor { height: 100% !important; }
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+#app {
+  display: grid;
+  grid-template-rows: 52px 1fr auto;
+  grid-template-columns: 220px 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar editor"
+    "keyboard keyboard";
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+}
 
-        /* Custom Keyboard Styling */
-        #custom-keyboard {
-            display: none; height: 180px; background: var(--panel-bg);
-            backdrop-filter: blur(var(--blur)); border-top: var(--border);
-            padding: 10px; grid-template-columns: repeat(10, 1fr); gap: 8px;
-        }
-        #custom-keyboard.active { display: grid; }
-        .key {
-            background: rgba(255,255,255,0.1); border: var(--border); border-radius: 8px;
-            display: flex; align-items: center; justify-content: center; font-size: 18px;
-            color: var(--text-color); font-weight: bold; cursor: pointer;
-        }
-        .key:active { background: var(--accent); color: white; }
+/* ============================================================
+   HEADER / TOOLBAR
+   ============================================================ */
+#header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
 
-        select, button {
-            background: rgba(255,255,255,0.1); border: var(--border); color: var(--text-color);
-            padding: 8px 12px; border-radius: 8px; outline: none;
-        }
-    </style>
+.logo {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.logo-dot { width:8px;height:8px;border-radius:50%;background:var(--accent); box-shadow:0 0 10px var(--accent-glow); }
+
+.toolbar-sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+
+.tb-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--text2);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tb-btn:hover, .tb-btn.active {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text);
+}
+.tb-btn svg { width:14px;height:14px;flex-shrink:0; }
+
+.tb-run {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent !important;
+  margin-left: auto;
+}
+.tb-run:hover { opacity: 0.85; background: var(--accent); color: #fff; }
+
+#lang-select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Theme picker */
+#theme-btn { position: relative; }
+#theme-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+#theme-picker.open { display: flex; }
+.theme-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text2);
+  padding: 6px 8px 2px;
+}
+.theme-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.theme-option:hover { background: var(--bg3); color: var(--text); }
+.theme-option.selected { color: var(--accent); }
+.theme-swatch {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   SIDEBAR — FILE TREE
+   ============================================================ */
+#sidebar {
+  grid-area: sidebar;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-header {
+  padding: 12px 14px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sidebar-header button {
+  background: none; border: none; color: var(--accent);
+  font-size: 18px; cursor: pointer; line-height: 1;
+}
+
+.file-tree { flex: 1; overflow-y: auto; padding: 4px 8px 8px; }
+.file-tree::-webkit-scrollbar { width: 3px; }
+.file-tree::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.file-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: var(--font-code);
+  font-size: 12px;
+  color: var(--text2);
+  transition: all 0.12s;
+}
+.file-item:hover { background: var(--bg3); color: var(--text); }
+.file-item.active { background: var(--accent-glow); color: var(--accent); }
+.file-icon { font-size: 13px; }
+
+.sidebar-section {
+  border-top: 1px solid var(--border);
+  padding: 12px 14px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+/* ============================================================
+   EDITOR AREA
+   ============================================================ */
+#editor-area {
+  grid-area: editor;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Tabs */
+#tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+#tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 7px 7px 0 0;
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: all 0.15s;
+  position: relative;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+.tab-close {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.tab:hover .tab-close, .tab.active .tab-close { opacity: 0.6; }
+
+/* Code + gutter wrapper */
+#code-wrap {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+#line-nums {
+  padding: 14px 0;
+  min-width: 44px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  text-align: right;
+  font-family: var(--font-code);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text2);
+  overflow: hidden;
+  user-select: none;
+  padding-right: 10px;
+  padding-left: 6px;
+}
+
+#editor {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-code);
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--text);
+  padding: 14px 14px 14px 14px;
+  caret-color: var(--accent);
+  overflow-y: auto;
+  white-space: pre;
+  overflow-x: auto;
+  tab-size: 2;
+  -webkit-overflow-scrolling: touch;
+}
+#editor::-webkit-scrollbar { width: 4px; height: 4px; }
+#editor::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Autocomplete dropdown */
+#autocomplete {
+  position: absolute;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+  z-index: 50;
+  overflow: hidden;
+  min-width: 180px;
+  max-width: 280px;
+  display: none;
+}
+#autocomplete.visible { display: block; }
+.ac-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  font-family: var(--font-code);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.ac-item:hover, .ac-item.selected { background: var(--bg3); }
+.ac-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--accent-glow);
+  color: var(--accent2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.ac-name { color: var(--text); flex: 1; }
+.ac-hint { color: var(--text2); font-size: 10px; }
+
+/* Status bar */
+#status-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 4px 14px;
+  background: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 0.03em;
+}
+#status-bar span { opacity: 0.75; }
+
+/* ============================================================
+   CUSTOM KEYBOARD
+   ============================================================ */
+#keyboard-container {
+  grid-area: keyboard;
+  background: var(--kb-bg);
+  border-top: 1px solid var(--border);
+  padding: 10px 10px 18px;
+  display: none; /* toggled by JS */
+  flex-direction: column;
+  gap: 7px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  max-height: 38vh;
+}
+#keyboard-container.visible { display: flex; }
+
+/* Snippet bar — quick inserts */
+#snippet-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+#snippet-bar::-webkit-scrollbar { display: none; }
+.snip-btn {
+  flex-shrink: 0;
+  padding: 5px 11px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent2);
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.1s;
+}
+.snip-btn:active { opacity: 0.7; transform: scale(0.96); }
+
+/* Key rows */
+.key-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.key {
+  flex: 1;
+  max-width: 52px;
+  height: 42px;
+  min-width: 28px;
+  background: var(--kb-key);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid rgba(0,0,0,0.25);
+  border-radius: 7px;
+  color: var(--kb-text, var(--text));
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  transition: background 0.08s, transform 0.08s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  position: relative;
+}
+.key:active { background: var(--kb-key-hover); transform: scale(0.94); }
+
+.key-alt {
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--text2);
+  position: absolute;
+  top: 4px;
+  right: 5px;
+}
+
+.key.special {
+  background: var(--kb-special);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  flex: 1.5;
+  max-width: 70px;
+}
+.key.wide { flex: 2; max-width: 100px; }
+.key.space { flex: 5; max-width: none; }
+.key.accent-key {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  font-size: 11px;
+}
+
+/* Prediction bar */
+#prediction-bar {
+  display: flex;
+  gap: 6px;
+  padding: 0 2px;
+  overflow-x: auto;
+}
+#prediction-bar::-webkit-scrollbar { display: none; }
+.pred-btn {
+  flex: 1;
+  min-width: 70px;
+  padding: 8px 6px;
+  background: var(--kb-key);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--kb-text, var(--text));
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pred-btn:active { opacity: 0.7; }
+.pred-btn.main {
+  font-weight: 700;
+  color: var(--accent2);
+  background: var(--accent-glow);
+  border-color: rgba(124,106,245,0.2);
+}
+
+/* ============================================================
+   OUTPUT PANEL
+   ============================================================ */
+#output-panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 200px;
+  background: var(--bg2);
+  border-top: 2px solid var(--accent);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+}
+#output-panel.open { transform: translateY(0); }
+.output-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.output-header button {
+  background: none; border: none; color: var(--text2);
+  font-size: 16px; cursor: pointer;
+}
+#output-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--syn-string);
+}
+
+/* ============================================================
+   SETTINGS MODAL
+   ============================================================ */
+#settings-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+#settings-modal.open { display: flex; }
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  width: 340px;
+  max-width: 90vw;
+  box-shadow: var(--shadow);
+}
+.modal-box h2 {
+  font-size: 18px; font-weight: 800; margin-bottom: 18px;
+  letter-spacing: -0.3px;
+}
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.setting-row:last-of-type { border-bottom: none; }
+.setting-label { font-weight: 600; color: var(--text); }
+.setting-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  width: 40px; height: 22px;
+  cursor: pointer;
+}
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  transition: background 0.2s;
+}
+.toggle input:checked ~ .toggle-track { background: var(--accent); border-color: var(--accent); }
+.toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.hidden { display: none !important; }
+.flex-1 { flex: 1; }
+.ml-auto { margin-left: auto; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
 </head>
 <body>
+<div id="app">
 
-<div class="app-container">
-    <div class="toolbar">
-        <div class="logo" style="font-weight: 800; font-size: 1.2rem;">iPad<span style="color:var(--accent)">Code</span></div>
-        <div class="controls">
-            <select onchange="document.body.className = 'theme-' + this.value">
-                <option value="glass">Glass Theme</option>
-                <option value="white">White Theme</option>
-                <option value="dark">Dark Theme</option>
-                <option value="minimal">Minimal Theme</option>
-            </select>
-            <button onclick="toggleKeyboard()" id="kb-btn">⌨️ Keyboard: OFF</button>
+  <!-- ===== HEADER ===== -->
+  <header id="header">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      CodePad
+    </div>
+
+    <div class="toolbar-sep"></div>
+
+    <select id="lang-select" onchange="setLanguage(this.value)">
+      <option value="lua">Lua / Roblox</option>
+      <option value="javascript">JavaScript</option>
+      <option value="typescript">TypeScript</option>
+      <option value="python">Python</option>
+      <option value="html">HTML</option>
+      <option value="css">CSS</option>
+      <option value="cpp">C++</option>
+      <option value="swift">Swift</option>
+      <option value="go">Go</option>
+      <option value="rust">Rust</option>
+      <option value="json">JSON</option>
+    </select>
+
+    <button class="tb-btn" onclick="newFile()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z"/><polyline points="9,2 9,6 13,6"/></svg>
+      New
+    </button>
+
+    <button class="tb-btn" onclick="formatCode()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4h12M2 8h7M2 12h9"/></svg>
+      Format
+    </button>
+
+    <button class="tb-btn" id="kb-toggle-btn" onclick="toggleKeyboard()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="14" height="9" rx="2"/><path d="M4 8h1m2 0h1m2 0h1m-7 2.5h6"/></svg>
+      Keyboard
+    </button>
+
+    <div style="position:relative">
+      <button class="tb-btn" id="theme-btn" onclick="toggleThemePicker()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 010 12"/></svg>
+        Theme
+      </button>
+      <div id="theme-picker">
+        <div class="theme-group-label">Dark</div>
+        <div class="theme-option selected" data-theme="default" onclick="applyTheme('default',this)">
+          <div class="theme-swatch" style="background:#141416"></div> Minimal Dark
         </div>
+        <div class="theme-option" data-theme="glass-dark" onclick="applyTheme('glass-dark',this)">
+          <div class="theme-swatch" style="background:linear-gradient(135deg,#1c1c2e,#2d2d4e)"></div> Glass Dark
+        </div>
+        <div class="theme-option" data-theme="minimal-dark" onclick="applyTheme('minimal-dark',this)">
+          <div class="theme-swatch" style="background:#111"></div> Pure Dark
+        </div>
+        <div class="theme-group-label">Light</div>
+        <div class="theme-option" data-theme="minimal-white" onclick="applyTheme('minimal-white',this)">
+          <div class="theme-swatch" style="background:#f0f0f0;border-color:#ccc"></div> Minimal White
+        </div>
+        <div class="theme-option" data-theme="glass-white" onclick="applyTheme('glass-white',this)">
+          <div class="theme-swatch" style="background:linear-gradient(135deg,rgba(255,255,255,0.8),rgba(235,235,250,0.8))"></div> Glass White
+        </div>
+      </div>
     </div>
 
-    <div id="editor"></div>
+    <button class="tb-btn" onclick="openSettings()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5V3m0 10v1.5M1.5 8H3m10 0h1.5M3.1 3.1l1.1 1.1m7.6 7.6l1.1 1.1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1"/></svg>
+    </button>
 
-    <!-- Custom Coding Keyboard -->
-    <div id="custom-keyboard">
-        <div class="key" onclick="insert('{')">{</div>
-        <div class="key" onclick="insert('}')">}</div>
-        <div class="key" onclick="insert('(')">(</div>
-        <div class="key" onclick="insert(')')">)</div>
-        <div class="key" onclick="insert('[')">[</div>
-        <div class="key" onclick="insert(']')">]</div>
-        <div class="key" onclick="insert(';')">;</div>
-        <div class="key" onclick="insert('=')">=</div>
-        <div class="key" onclick="insert('=>')">=&gt;</div>
-        <div class="key" onclick="insert('\"')">"</div>
-        <div class="key" onclick="insert('<')">&lt;</div>
-        <div class="key" onclick="insert('>')">&gt;</div>
-        <div class="key" onclick="insert('/')">/</div>
-        <div class="key" onclick="insert('.')">.</div>
-        <div class="key" onclick="insert(':')">:</div>
-        <div class="key" onclick="insert(',')">,</div>
-        <div class="key" style="grid-column: span 2;" onclick="insert('    ')">TAB</div>
-        <div class="key" style="grid-column: span 2; background: var(--accent);" onclick="insert('\n')">ENTER</div>
+    <button class="tb-btn tb-run" onclick="runCode()">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.5l8 4.5-8 4.5z"/></svg>
+      Run
+    </button>
+  </header>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      Files
+      <button onclick="newFile()" title="New file">+</button>
     </div>
+    <div class="file-tree" id="file-tree"></div>
+    <div class="sidebar-section">Snippets</div>
+    <div class="file-tree" id="snippet-list"></div>
+  </aside>
+
+  <!-- ===== EDITOR ===== -->
+  <main id="editor-area">
+    <div id="tabs"></div>
+    <div id="code-wrap">
+      <div id="line-nums"></div>
+      <textarea id="editor"
+        spellcheck="false"
+        autocorrect="off"
+        autocapitalize="off"
+        autocomplete="off"
+        data-gramm="false"
+        placeholder="// Start coding..."
+        oninput="onEditorInput()"
+        onkeydown="onEditorKeyDown(event)"
+        onscroll="syncScroll()"
+      ></textarea>
+      <div id="autocomplete"></div>
+    </div>
+    <div id="status-bar">
+      <span id="status-lang">Lua</span>
+      <span>|</span>
+      <span id="status-cursor">Ln 1, Col 1</span>
+      <span>|</span>
+      <span id="status-chars">0 chars</span>
+      <span class="flex-1"></span>
+      <span id="status-kb">Keyboard OFF</span>
+    </div>
+
+    <!-- Output Panel -->
+    <div id="output-panel">
+      <div class="output-header">
+        Output
+        <button onclick="closeOutput()">✕</button>
+      </div>
+      <div id="output-content"></div>
+    </div>
+  </main>
+
+  <!-- ===== CUSTOM KEYBOARD ===== -->
+  <div id="keyboard-container">
+
+    <!-- Snippet bar -->
+    <div id="snippet-bar"></div>
+
+    <!-- Prediction bar -->
+    <div id="prediction-bar">
+      <button class="pred-btn main" id="pred0" onclick="insertPrediction(0)">if</button>
+      <button class="pred-btn" id="pred1" onclick="insertPrediction(1)">then</button>
+      <button class="pred-btn" id="pred2" onclick="insertPrediction(2)">end</button>
+      <button class="pred-btn" id="pred3" onclick="insertPrediction(3)">local</button>
+      <button class="pred-btn" id="pred4" onclick="insertPrediction(4)">function</button>
+    </div>
+
+    <!-- Row 1: symbols -->
+    <div class="key-row">
+      <div class="key" data-char="1"><span>1</span><span class="key-alt">!</span></div>
+      <div class="key" data-char="2"><span>2</span><span class="key-alt">@</span></div>
+      <div class="key" data-char="3"><span>3</span><span class="key-alt">#</span></div>
+      <div class="key" data-char="4"><span>4</span><span class="key-alt">$</span></div>
+      <div class="key" data-char="5"><span>5</span><span class="key-alt">%</span></div>
+      <div class="key" data-char="6"><span>6</span><span class="key-alt">^</span></div>
+      <div class="key" data-char="7"><span>7</span><span class="key-alt">&</span></div>
+      <div class="key" data-char="8"><span>8</span><span class="key-alt">*</span></div>
+      <div class="key" data-char="9"><span>9</span><span class="key-alt">(</span></div>
+      <div class="key" data-char="0"><span>0</span><span class="key-alt">)</span></div>
+      <div class="key special" onclick="typeChar('←', true)">⌫</div>
+    </div>
+
+    <!-- Row 2: brackets & ops -->
+    <div class="key-row">
+      <div class="key accent-key" data-char="{">{ }</div>
+      <div class="key accent-key" data-char="[">[  ]</div>
+      <div class="key accent-key" data-char="(">( )</div>
+      <div class="key" data-char="=">= </div>
+      <div class="key" data-char="+">+</div>
+      <div class="key" data-char="-">−</div>
+      <div class="key" data-char="*">×</div>
+      <div class="key" data-char="/">/</div>
+      <div class="key" data-char=".">.</div>
+      <div class="key" data-char=",">,</div>
+      <div class="key" data-char=";">;</div>
+    </div>
+
+    <!-- Row 3: common code chars -->
+    <div class="key-row">
+      <div class="key" data-char='"'>"</div>
+      <div class="key" data-char="'">'</div>
+      <div class="key" data-char="`">`</div>
+      <div class="key" data-char="~">~</div>
+      <div class="key" data-char="!">!</div>
+      <div class="key" data-char="?">?</div>
+      <div class="key" data-char=":">:</div>
+      <div class="key" data-char="@">@</div>
+      <div class="key" data-char="#">#</div>
+      <div class="key" data-char="\\">\\</div>
+      <div class="key" data-char="|">|</div>
+    </div>
+
+    <!-- Row 4: nav + space -->
+    <div class="key-row">
+      <div class="key special" onclick="typeChar('TAB')">TAB</div>
+      <div class="key special" onclick="moveCursor('left')">◀</div>
+      <div class="key special" onclick="moveCursor('right')">▶</div>
+      <div class="key special" onclick="moveCursor('up')">▲</div>
+      <div class="key special" onclick="moveCursor('down')">▼</div>
+      <div class="key space" data-char=" ">SPACE</div>
+      <div class="key special" onclick="selectLine()">SEL</div>
+      <div class="key special" onclick="commentLine()">// </div>
+      <div class="key accent-key wide" onclick="typeChar('\n')">↵ ENTER</div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div id="settings-modal" onclick="closeSettingsOutside(event)">
+  <div class="modal-box">
+    <h2>⚙️ Settings</h2>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Custom Keyboard</div>
+        <div class="setting-sub">Replace iPad keyboard with code keyboard</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="setting-kb" onchange="toggleKeyboard()">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Autocomplete</div>
+        <div class="setting-sub">Show suggestions as you type</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="setting-ac" checked>
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Auto Bracket Pairs</div>
+        <div class="setting-sub">Auto close { [ ( " '</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="setting-brackets" checked>
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Font Size</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="tb-btn" onclick="changeFontSize(-1)">−</button>
+        <span id="font-size-label" style="font-size:13px;font-weight:700;width:28px;text-align:center">13</span>
+        <button class="tb-btn" onclick="changeFontSize(1)">+</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Line Numbers</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="setting-linenum" checked onchange="toggleLineNums()">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+
+    <button class="tb-btn" style="margin-top:16px;width:100%;justify-content:center;padding:10px" onclick="closeSettings()">Done</button>
+  </div>
 </div>
 
 <script>
-    function toggleKeyboard() {
-        const kb = document.getElementById('custom-keyboard');
-        const btn = document.getElementById('kb-btn');
-        kb.classList.toggle('active');
-        const isActive = kb.classList.contains('active');
-        btn.innerText = isActive ? "⌨️ Keyboard: ON" : "⌨️ Keyboard: OFF";
-        
-        // When custom keyboard is on, we might want to prevent the default 
-        // iOS keyboard from taking half the screen.
-        if(isActive) {
-            document.querySelector('.cm-content').setAttribute('inputmode', 'none');
-        } else {
-            document.querySelector('.cm-content').setAttribute('inputmode', 'text');
-        }
-    }
+// ============================================================
+//  STATE
+// ============================================================
+let files = [
+  { name: 'main.lua',       lang: 'lua',        content: '-- Welcome to CodePad 🎀\n-- Roblox / Lua IDE optimised for iPad\n\nlocal Players = game:GetService("Players")\nlocal RunService = game:GetService("RunService")\n\nlocal function onPlayerAdded(player)\n\tprint("Player joined: " .. player.Name)\nend\n\nPlayers.PlayerAdded:Connect(onPlayerAdded)\n' },
+  { name: 'script.js',      lang: 'javascript', content: '// JavaScript file\n\nconst greet = (name) => {\n\treturn `Hello, ${name}!`;\n};\n\nconsole.log(greet("CodePad"));\n' },
+  { name: 'styles.css',     lang: 'css',        content: '/* CSS file */\n\nbody {\n\tmargin: 0;\n\tpadding: 0;\n\tfont-family: sans-serif;\n\tbackground: #0d0d0f;\n\tcolor: #e8e8ed;\n}\n' },
+];
+let activeFileIdx = 0;
+let currentLang = 'lua';
+let fontSize = 13;
+let kbVisible = false;
+let predictions = [];
 
-    function insert(chars) {
-        const view = window.view;
-        const mainSel = view.state.selection.main;
-        view.dispatch({
-            changes: {from: mainSel.from, to: mainSel.to, insert: chars},
-            selection: {anchor: mainSel.from + chars.length}
-        });
-        view.focus();
+// ============================================================
+//  LANGUAGE SNIPPETS / KEYWORDS
+// ============================================================
+const LANG_DATA = {
+  lua: {
+    keywords: ['and','break','do','else','elseif','end','false','for','function','goto','if','in','local','nil','not','or','repeat','return','then','true','until','while'],
+    builtins: ['print','tostring','tonumber','type','pairs','ipairs','next','select','unpack','rawget','rawset','rawequal','error','assert','pcall','xpcall','require','loadstring','load'],
+    roblox: ['game','workspace','script','Players','RunService','TweenService','UserInputService','ReplicatedStorage','ServerStorage','Lighting','SoundService','HttpService','DataStoreService','Instance','Vector3','CFrame','Color3','UDim2','UDim','TweenInfo','Enum','BrickColor','Ray','NumberValue','StringValue','BoolValue'],
+    snippets: ['if cond then\nend','for i=1,10 do\nend','function name()\nend','local x = ','while true do\nend','game:GetService("")','Instance.new("")','Vector3.new(0,0,0)','CFrame.new(0,0,0)','Players.PlayerAdded:Connect(function(player)\nend)'],
+    snippetLabels: ['if/end','for loop','function','local','while','GetService','Instance','Vector3','CFrame','PlayerAdded'],
+  },
+  javascript: {
+    keywords: ['const','let','var','function','return','if','else','for','while','do','class','extends','import','export','default','async','await','try','catch','finally','throw','new','this','typeof','instanceof','in','of','break','continue','switch','case','delete','void','null','undefined','true','false'],
+    builtins: ['console','document','window','Array','Object','String','Number','Boolean','Promise','setTimeout','setInterval','clearTimeout','clearInterval','fetch','JSON','Math','Date','RegExp','Error','Map','Set','Symbol'],
+    snippets: ['const x = () => {\n}','if (condition) {\n}','for (let i=0; i<n; i++) {\n}','async function name() {\n\tawait\n}','class Name {\n\tconstructor() {\n\t}\n}','fetch(url).then(r => r.json())','console.log()','JSON.stringify()','Array.from()','Promise.all([])'],
+    snippetLabels: ['arrow fn','if block','for loop','async fn','class','fetch','log','JSON','Array.from','Promise.all'],
+  },
+  python: {
+    keywords: ['def','class','if','elif','else','for','while','try','except','finally','import','from','as','return','yield','lambda','with','pass','break','continue','raise','and','or','not','in','is','True','False','None'],
+    builtins: ['print','len','range','list','dict','tuple','set','str','int','float','bool','open','type','isinstance','enumerate','zip','map','filter','sorted','reversed','sum','min','max','abs'],
+    snippets: ['def name():\n\tpass','if condition:\n\tpass','for item in items:\n\tpass','class Name:\n\tdef __init__(self):\n\t\tpass','try:\n\tpass\nexcept Exception as e:\n\tpass','with open("file") as f:\n\tpass','[x for x in list]','lambda x: x'],
+    snippetLabels: ['def','if','for','class','try/except','with open','list comp','lambda'],
+  },
+  typescript: {
+    keywords: ['const','let','var','function','return','if','else','for','while','class','extends','implements','interface','type','enum','import','export','async','await','try','catch','new','this','typeof','instanceof','null','undefined','true','false','readonly','private','public','protected','abstract','namespace','declare'],
+    builtins: ['console','Array','Object','String','Number','Boolean','Promise','Record','Partial','Required','Pick','Omit','Readonly','Map','Set'],
+    snippets: ['const fn = (): void => {\n}','interface Name {\n}','type Name = {\n}','async function name(): Promise<void> {\n}','class Name implements Interface {\n}'],
+    snippetLabels: ['fn','interface','type','async fn','class'],
+  },
+  html: {
+    keywords: ['html','head','body','div','span','p','a','img','button','input','form','label','h1','h2','h3','h4','ul','li','nav','header','footer','main','section','article'],
+    builtins: ['class','id','style','href','src','alt','type','name','value','placeholder','onclick','onchange'],
+    snippets: ['<!DOCTYPE html>\n<html>\n<head>\n</head>\n<body>\n</body>\n</html>','<div class="">\n</div>','<button onclick="">\n</button>','<input type="text" placeholder="">'],
+    snippetLabels: ['Boilerplate','div','button','input'],
+  },
+  css: {
+    keywords: ['display','flex','grid','position','margin','padding','color','background','border','font','width','height','max-width','min-height','overflow','z-index','transition','transform','animation','opacity','cursor','pointer-events'],
+    builtins: ['px','em','rem','vh','vw','%','auto','none','block','inline','flex','grid','absolute','relative','fixed','sticky'],
+    snippets: ['display: flex;\nalign-items: center;\njustify-content: center;','transition: all 0.3s ease;','background: linear-gradient(135deg, #fff, #000);','@keyframes name {\n\tfrom {}\n\tto {}\n}'],
+    snippetLabels: ['flexbox','transition','gradient','@keyframes'],
+  },
+};
+
+// Default for unknown langs
+const defaultLangData = { keywords: [], builtins: [], snippets: [], snippetLabels: [] };
+
+function getLangData() {
+  return LANG_DATA[currentLang] || defaultLangData;
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderFileTree();
+  renderTabs();
+  loadFile(0);
+  renderSnippetBar();
+  setupKeyListeners();
+  updateStatusBar();
+});
+
+function setupKeyListeners() {
+  // Key tap handler for custom keyboard
+  document.querySelectorAll('.key[data-char]').forEach(key => {
+    key.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      const ch = key.dataset.char;
+      if (ch === '←') { typeChar('←', true); }
+      else if (['{','[','('].includes(ch)) { insertBracketPair(ch); }
+      else { typeChar(ch); }
+    });
+  });
+
+  // Track cursor
+  const ed = document.getElementById('editor');
+  ed.addEventListener('click', updateStatusBar);
+  ed.addEventListener('keyup', updateStatusBar);
+}
+
+// ============================================================
+//  FILE MANAGEMENT
+// ============================================================
+function renderFileTree() {
+  const tree = document.getElementById('file-tree');
+  tree.innerHTML = '';
+  files.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item' + (i === activeFileIdx ? ' active' : '');
+    div.innerHTML = `<span class="file-icon">${fileIcon(f.name)}</span>${f.name}`;
+    div.onclick = () => loadFile(i);
+    tree.appendChild(div);
+  });
+}
+
+function fileIcon(name) {
+  if (name.endsWith('.lua')) return '🌙';
+  if (name.endsWith('.js'))  return '🟨';
+  if (name.endsWith('.ts'))  return '🔷';
+  if (name.endsWith('.py'))  return '🐍';
+  if (name.endsWith('.html'))return '🌐';
+  if (name.endsWith('.css')) return '🎨';
+  if (name.endsWith('.json'))return '📋';
+  return '📄';
+}
+
+function renderTabs() {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = '';
+  files.forEach((f, i) => {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (i === activeFileIdx ? ' active' : '');
+    tab.innerHTML = `${fileIcon(f.name)} ${f.name}<span class="tab-close" onclick="closeTab(event,${i})">×</span>`;
+    tab.onclick = () => loadFile(i);
+    tabsEl.appendChild(tab);
+  });
+}
+
+function loadFile(idx) {
+  // save current
+  if (files[activeFileIdx]) {
+    files[activeFileIdx].content = document.getElementById('editor').value;
+  }
+  activeFileIdx = idx;
+  currentLang = files[idx].lang;
+  document.getElementById('editor').value = files[idx].content;
+  document.getElementById('lang-select').value = currentLang;
+  renderFileTree();
+  renderTabs();
+  renderSnippetBar();
+  updateLineNums();
+  updatePredictions('');
+  updateStatusBar();
+}
+
+function newFile() {
+  const langs = ['lua','javascript','python','typescript','html','css'];
+  const exts  = { lua:'lua', javascript:'js', python:'py', typescript:'ts', html:'html', css:'css' };
+  const lang  = 'lua';
+  const name  = `file${files.length + 1}.${exts[lang]}`;
+  files.push({ name, lang, content: '' });
+  loadFile(files.length - 1);
+}
+
+function closeTab(e, idx) {
+  e.stopPropagation();
+  if (files.length === 1) return;
+  files.splice(idx, 1);
+  if (activeFileIdx >= files.length) activeFileIdx = files.length - 1;
+  loadFile(activeFileIdx);
+}
+
+// ============================================================
+//  EDITOR INPUT
+// ============================================================
+function onEditorInput() {
+  updateLineNums();
+  const val = document.getElementById('editor').value;
+  const pos = document.getElementById('editor').selectionStart;
+  const word = getCurrentWord(val, pos);
+  updatePredictions(word);
+  updateAutocomplete(word, pos);
+  updateStatusBar();
+  files[activeFileIdx].content = val;
+}
+
+function getCurrentWord(text, pos) {
+  let start = pos - 1;
+  while (start >= 0 && /[\w.]/.test(text[start])) start--;
+  return text.slice(start + 1, pos);
+}
+
+function onEditorKeyDown(e) {
+  const ed = document.getElementById('editor');
+  const autoAC = document.getElementById('setting-ac').checked;
+  const autoBrackets = document.getElementById('setting-brackets').checked;
+
+  // Tab = 2 spaces
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    insertAtCursor('  ');
+    return;
+  }
+
+  // Auto bracket pairs
+  if (autoBrackets) {
+    const pairs = { '{':'}', '[':']', '(':')','`':'`','"':'"',"'":"'" };
+    if (pairs[e.key]) {
+      e.preventDefault();
+      const closing = pairs[e.key];
+      const start = ed.selectionStart;
+      const end = ed.selectionEnd;
+      if (start !== end) {
+        // Wrap selection
+        const sel = ed.value.slice(start, end);
+        const val = ed.value.slice(0,start) + e.key + sel + closing + ed.value.slice(end);
+        ed.value = val;
+        ed.selectionStart = start + 1;
+        ed.selectionEnd = end + 1;
+      } else {
+        insertAtCursor(e.key + closing);
+        ed.selectionStart = ed.selectionEnd = start + 1;
+      }
+      onEditorInput();
+      return;
     }
+  }
+
+  // Autocomplete accept with Enter/Tab
+  const acEl = document.getElementById('autocomplete');
+  if (acEl.classList.contains('visible') && (e.key === 'Enter' || e.key === 'Tab')) {
+    const sel = acEl.querySelector('.ac-item.selected') || acEl.querySelector('.ac-item');
+    if (sel) {
+      e.preventDefault();
+      const word = sel.querySelector('.ac-name').textContent;
+      acceptAutocomplete(word);
+      return;
+    }
+  }
+
+  if (e.key === 'Escape') {
+    hideAutocomplete();
+  }
+
+  setTimeout(updateStatusBar, 0);
+}
+
+// ============================================================
+//  AUTOCOMPLETE
+// ============================================================
+let acIndex = 0;
+let acWords = [];
+
+function updateAutocomplete(word, pos) {
+  const acEl = document.getElementById('autocomplete');
+  const acOn = document.getElementById('setting-ac').checked;
+  if (!acOn || word.length < 1) { hideAutocomplete(); return; }
+
+  const ld = getLangData();
+  const all = [...ld.keywords, ...(ld.builtins||[]), ...(ld.roblox||[])];
+  const matches = all.filter(w => w.startsWith(word) && w !== word).slice(0, 6);
+
+  if (!matches.length) { hideAutocomplete(); return; }
+
+  acWords = matches;
+  acIndex = 0;
+  acEl.innerHTML = matches.map((m, i) => {
+    const isKw = ld.keywords.includes(m);
+    const isRb = (ld.roblox||[]).includes(m);
+    const tag = isRb ? 'roblox' : (isKw ? 'kw' : 'api');
+    return `<div class="ac-item${i===0?' selected':''}" onclick="acceptAutocomplete('${m}')">
+      <span class="ac-tag">${tag}</span>
+      <span class="ac-name">${m}</span>
+    </div>`;
+  }).join('');
+
+  // Position near cursor
+  const ed = document.getElementById('editor');
+  const lines = ed.value.slice(0, pos).split('\n');
+  const line = lines.length;
+  const lineH = fontSize * 1.65;
+  acEl.style.top = (line * lineH - ed.scrollTop + 14) + 'px';
+  acEl.style.left = '60px';
+  acEl.classList.add('visible');
+}
+
+function hideAutocomplete() {
+  document.getElementById('autocomplete').classList.remove('visible');
+}
+
+function acceptAutocomplete(word) {
+  const ed = document.getElementById('editor');
+  const pos = ed.selectionStart;
+  const val = ed.value;
+  const start = (() => { let s = pos-1; while(s>=0&&/\w/.test(val[s])) s--; return s+1; })();
+  ed.value = val.slice(0, start) + word + val.slice(pos);
+  ed.selectionStart = ed.selectionEnd = start + word.length;
+  hideAutocomplete();
+  onEditorInput();
+}
+
+// ============================================================
+//  PREDICTIONS (above keyboard)
+// ============================================================
+const PREDICTION_MAPS = {
+  lua: {
+    '':        ['local','function','if','for','while'],
+    'l':       ['local','load','loadstring','Lighting'],
+    'lo':      ['local'],
+    'f':       ['function','false','for','FindFirstChild'],
+    'i':       ['if','ipairs','in','Instance'],
+    'if':      ['if cond then\nend','if not','if type('],
+    'p':       ['print','pairs','pcall'],
+    'r':       ['return','repeat','rawget'],
+    'g':       ['game','game:GetService','goto'],
+    'e':       ['end','else','elseif','error'],
+    't':       ['then','true','table','tostring','type'],
+    'w':       ['while','workspace'],
+    'in':      ['Instance.new','ipairs','in'],
+    'v':       ['Vector3.new','Vector3','void'],
+    'c':       ['CFrame.new','Color3.new','connect'],
+    'game':    ['game:GetService("")','game.Players','game.Workspace'],
+  },
+  javascript: {
+    '':        ['const','function','if','return','async'],
+    'c':       ['const','class','console.log'],
+    'f':       ['function','for','fetch'],
+    'a':       ['async','await','Array'],
+    'r':       ['return','require'],
+    'co':      ['const','console.log'],
+    'console': ['console.log()','console.error()','console.warn()'],
+  },
+  python: {
+    '':        ['def','class','if','for','import'],
+    'd':       ['def','dict'],
+    'c':       ['class','continue'],
+    'i':       ['if','import','in','is'],
+    'r':       ['return','range'],
+    'p':       ['print','pass'],
+  },
+};
+
+let currentPredictions = ['if','then','end','local','function'];
+
+function updatePredictions(word) {
+  const map = PREDICTION_MAPS[currentLang] || {};
+  const key = word.toLowerCase();
+  let preds = map[key] || map[''] || ['if','then','end','return','local'];
+  if (preds.length < 5) {
+    const ld = getLangData();
+    const extras = ld.keywords.filter(k => k.startsWith(key) && !preds.includes(k));
+    preds = [...preds, ...extras].slice(0, 5);
+  }
+  preds = preds.slice(0, 5);
+  currentPredictions = preds;
+  for (let i = 0; i < 5; i++) {
+    const btn = document.getElementById('pred' + i);
+    if (btn) {
+      btn.textContent = preds[i] || '';
+      btn.style.display = preds[i] ? '' : 'none';
+    }
+  }
+}
+
+function insertPrediction(i) {
+  const p = currentPredictions[i];
+  if (!p) return;
+  const ed = document.getElementById('editor');
+  const pos = ed.selectionStart;
+  const val = ed.value;
+  // replace current word
+  let start = pos - 1;
+  while (start >= 0 && /\w/.test(val[start])) start--;
+  start++;
+  ed.value = val.slice(0, start) + p + val.slice(pos);
+  ed.selectionStart = ed.selectionEnd = start + p.length;
+  hideAutocomplete();
+  onEditorInput();
+  ed.focus();
+}
+
+// ============================================================
+//  SNIPPET BAR
+// ============================================================
+function renderSnippetBar() {
+  const bar = document.getElementById('snippet-bar');
+  bar.innerHTML = '';
+  const ld = getLangData();
+  (ld.snippetLabels || []).forEach((label, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'snip-btn';
+    btn.textContent = label;
+    btn.onclick = () => insertSnippet(i);
+    bar.appendChild(btn);
+  });
+
+  // Snippet sidebar list
+  const sl = document.getElementById('snippet-list');
+  sl.innerHTML = '';
+  (ld.snippetLabels || []).forEach((label, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<span class="file-icon">✂️</span>${label}`;
+    div.onclick = () => insertSnippet(i);
+    sl.appendChild(div);
+  });
+}
+
+function insertSnippet(i) {
+  const ld = getLangData();
+  const snip = ld.snippets[i];
+  if (!snip) return;
+  insertAtCursor(snip);
+  onEditorInput();
+  document.getElementById('editor').focus();
+}
+
+// ============================================================
+//  LINE NUMBERS
+// ============================================================
+function updateLineNums() {
+  const show = document.getElementById('setting-linenum').checked;
+  const ln = document.getElementById('line-nums');
+  if (!show) { ln.style.display = 'none'; return; }
+  ln.style.display = '';
+  const lines = document.getElementById('editor').value.split('\n').length;
+  ln.innerHTML = Array.from({length:lines},(_,i)=>i+1).join('<br>');
+}
+
+function syncScroll() {
+  const ed = document.getElementById('editor');
+  document.getElementById('line-nums').scrollTop = ed.scrollTop;
+}
+
+function toggleLineNums() {
+  updateLineNums();
+}
+
+// ============================================================
+//  STATUS BAR
+// ============================================================
+function updateStatusBar() {
+  const ed = document.getElementById('editor');
+  const val = ed.value;
+  const pos = ed.selectionStart;
+  const lines = val.slice(0, pos).split('\n');
+  const ln = lines.length;
+  const col = lines[lines.length - 1].length + 1;
+  document.getElementById('status-cursor').textContent = `Ln ${ln}, Col ${col}`;
+  document.getElementById('status-chars').textContent = `${val.length} chars`;
+  const langNames = { lua:'Lua/Roblox', javascript:'JavaScript', typescript:'TypeScript', python:'Python', html:'HTML', css:'CSS', cpp:'C++', swift:'Swift', go:'Go', rust:'Rust', json:'JSON' };
+  document.getElementById('status-lang').textContent = langNames[currentLang] || currentLang;
+  document.getElementById('status-kb').textContent = kbVisible ? 'Custom KB ON' : 'Custom KB OFF';
+}
+
+// ============================================================
+//  KEYBOARD TOGGLE
+// ============================================================
+function toggleKeyboard() {
+  kbVisible = !kbVisible;
+  const kbEl = document.getElementById('keyboard-container');
+  const ed = document.getElementById('editor');
+  const checkbox = document.getElementById('setting-kb');
+  checkbox.checked = kbVisible;
+
+  if (kbVisible) {
+    kbEl.classList.add('visible');
+    // Prevent system keyboard
+    ed.setAttribute('readonly', true);
+    document.getElementById('kb-toggle-btn').classList.add('active');
+  } else {
+    kbEl.classList.remove('visible');
+    ed.removeAttribute('readonly');
+    document.getElementById('kb-toggle-btn').classList.remove('active');
+    ed.focus();
+  }
+  updateStatusBar();
+}
+
+// ============================================================
+//  TYPING HELPERS
+// ============================================================
+function insertAtCursor(text) {
+  const ed = document.getElementById('editor');
+  const start = ed.selectionStart;
+  const end = ed.selectionEnd;
+  ed.value = ed.value.slice(0, start) + text + ed.value.slice(end);
+  ed.selectionStart = ed.selectionEnd = start + text.length;
+}
+
+function typeChar(ch, isBackspace = false) {
+  const ed = document.getElementById('editor');
+  if (ch === 'TAB') { insertAtCursor('  '); }
+  else if (ch === '\n') {
+    // Smart indent
+    const pos = ed.selectionStart;
+    const line = ed.value.slice(0, pos).split('\n').pop();
+    const indent = line.match(/^(\s*)/)[1];
+    // Extra indent after {, (, do, then
+    const extra = /[{(\[:]$/.test(line.trim()) || /\b(do|then|else|elseif)\s*$/.test(line) ? '  ' : '';
+    insertAtCursor('\n' + indent + extra);
+  }
+  else if (isBackspace || ch === '←') {
+    const start = ed.selectionStart;
+    const end = ed.selectionEnd;
+    if (start !== end) {
+      ed.value = ed.value.slice(0, start) + ed.value.slice(end);
+      ed.selectionStart = ed.selectionEnd = start;
+    } else if (start > 0) {
+      ed.value = ed.value.slice(0, start - 1) + ed.value.slice(start);
+      ed.selectionStart = ed.selectionEnd = start - 1;
+    }
+  }
+  else { insertAtCursor(ch); }
+  onEditorInput();
+}
+
+function insertBracketPair(open) {
+  const pairs = {'{':'}', '[':']', '(':')' };
+  const close = pairs[open];
+  const ed = document.getElementById('editor');
+  const autoBrackets = document.getElementById('setting-brackets').checked;
+  if (autoBrackets) {
+    insertAtCursor(open + close);
+    ed.selectionStart = ed.selectionEnd = ed.selectionStart - 1;
+  } else {
+    insertAtCursor(open);
+  }
+  onEditorInput();
+}
+
+function moveCursor(dir) {
+  const ed = document.getElementById('editor');
+  const pos = ed.selectionStart;
+  const val = ed.value;
+  if (dir === 'left')  ed.selectionStart = ed.selectionEnd = Math.max(0, pos - 1);
+  if (dir === 'right') ed.selectionStart = ed.selectionEnd = Math.min(val.length, pos + 1);
+  if (dir === 'up') {
+    const lines = val.slice(0, pos).split('\n');
+    if (lines.length > 1) {
+      const col = lines[lines.length-1].length;
+      const prevLine = lines[lines.length-2];
+      ed.selectionStart = ed.selectionEnd = pos - lines[lines.length-1].length - 1 - Math.max(0, prevLine.length - col) + Math.min(col, prevLine.length);
+    }
+  }
+  if (dir === 'down') {
+    const lines = val.slice(0, pos).split('\n');
+    const col = lines[lines.length-1].length;
+    const afterLines = val.slice(pos).split('\n');
+    if (afterLines.length > 1) {
+      const nextLen = afterLines[1].length;
+      ed.selectionStart = ed.selectionEnd = pos + (afterLines[0].length + 1) + Math.min(col, nextLen);
+    }
+  }
+  updateStatusBar();
+}
+
+function selectLine() {
+  const ed = document.getElementById('editor');
+  const pos = ed.selectionStart;
+  const val = ed.value;
+  let start = val.lastIndexOf('\n', pos - 1) + 1;
+  let end = val.indexOf('\n', pos);
+  if (end === -1) end = val.length;
+  ed.selectionStart = start;
+  ed.selectionEnd = end;
+}
+
+function commentLine() {
+  const ed = document.getElementById('editor');
+  const pos = ed.selectionStart;
+  const val = ed.value;
+  let start = val.lastIndexOf('\n', pos - 1) + 1;
+  const commentChars = { lua:'-- ', javascript:'// ', typescript:'// ', python:'# ', css:'/* ', html:'<!-- ', go:'// ', rust:'// ', swift:'// ', cpp:'// ' };
+  const cc = commentChars[currentLang] || '// ';
+  const line = val.slice(start);
+  const lineEnd = line.indexOf('\n');
+  const lineText = lineEnd >= 0 ? line.slice(0, lineEnd) : line;
+  if (lineText.startsWith(cc)) {
+    ed.value = val.slice(0, start) + lineText.slice(cc.length) + val.slice(start + lineText.length);
+    ed.selectionStart = ed.selectionEnd = pos - cc.length;
+  } else {
+    ed.value = val.slice(0, start) + cc + val.slice(start);
+    ed.selectionStart = ed.selectionEnd = pos + cc.length;
+  }
+  onEditorInput();
+}
+
+// ============================================================
+//  FORMAT CODE (basic indent fixer)
+// ============================================================
+function formatCode() {
+  const ed = document.getElementById('editor');
+  let lines = ed.value.split('\n');
+  let indent = 0;
+  const indentKw = { lua: ['do','then','else','elseif','function'], javascript: ['{'], python: [':'] };
+  const dedentKw = { lua: ['end','else','elseif','until'], javascript: ['}'], python: [] };
+  const iKw = indentKw[currentLang] || [];
+  const dKw = dedentKw[currentLang] || [];
+
+  const result = lines.map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return '';
+    const endsWithIncrease = iKw.some(k => trimmed.endsWith(k));
+    const startsWithDecrease = dKw.some(k => trimmed.startsWith(k));
+    if (startsWithDecrease && indent > 0) indent--;
+    const out = '  '.repeat(indent) + trimmed;
+    if (endsWithIncrease) indent++;
+    return out;
+  });
+  ed.value = result.join('\n');
+  onEditorInput();
+}
+
+// ============================================================
+//  RUN CODE
+// ============================================================
+function runCode() {
+  const code = document.getElementById('editor').value;
+  const out = document.getElementById('output-content');
+  document.getElementById('output-panel').classList.add('open');
+
+  if (currentLang === 'javascript') {
+    const logs = [];
+    const origLog = console.log;
+    console.log = (...args) => logs.push(args.join(' '));
+    try {
+      // eslint-disable-next-line no-new-func
+      new Function(code)();
+    } catch(e) {
+      logs.push('❌ ' + e.toString());
+    }
+    console.log = origLog;
+    out.textContent = logs.length ? logs.join('\n') : '(no output)';
+  } else if (currentLang === 'lua') {
+    out.innerHTML = `<span style="color:var(--syn-comment)">-- Lua runs on Roblox server, not browser.\n-- Output simulation:\n</span>` +
+      code.split('\n').filter(l=>l.trim().startsWith('print')).map(l=>{
+        const m = l.match(/print\(["']?(.+?)["']?\)/);
+        return m ? `> ${m[1]}` : '';
+      }).filter(Boolean).join('\n') || '(no print statements found)';
+  } else {
+    out.textContent = `Run not supported for ${currentLang} in browser.\nCode is ${code.split('\n').length} lines.`;
+  }
+}
+
+function closeOutput() {
+  document.getElementById('output-panel').classList.remove('open');
+}
+
+// ============================================================
+//  LANGUAGE SWITCH
+// ============================================================
+function setLanguage(lang) {
+  currentLang = lang;
+  files[activeFileIdx].lang = lang;
+  renderSnippetBar();
+  updatePredictions('');
+  updateStatusBar();
+}
+
+// ============================================================
+//  THEME
+// ============================================================
+function toggleThemePicker() {
+  document.getElementById('theme-picker').classList.toggle('open');
+}
+
+function applyTheme(theme, el) {
+  document.documentElement.setAttribute('data-theme', theme === 'default' ? '' : theme);
+  document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('theme-picker').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#theme-btn') && !e.target.closest('#theme-picker')) {
+    document.getElementById('theme-picker').classList.remove('open');
+  }
+  if (!e.target.closest('#autocomplete')) {
+    // don't hide on editor click
+  }
+});
+
+// ============================================================
+//  SETTINGS
+// ============================================================
+function openSettings() { document.getElementById('settings-modal').classList.add('open'); }
+function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+function closeSettingsOutside(e) {
+  if (e.target === document.getElementById('settings-modal')) closeSettings();
+}
+
+function changeFontSize(delta) {
+  fontSize = Math.max(10, Math.min(22, fontSize + delta));
+  document.getElementById('editor').style.fontSize = fontSize + 'px';
+  document.getElementById('line-nums').style.fontSize = fontSize + 'px';
+  document.getElementById('font-size-label').textContent = fontSize;
+  updateLineNums();
+}
 </script>
-
 </body>
 </html>
