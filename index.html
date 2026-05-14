@@ -3,7 +3,13 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- iOS Meta Tags for Immersive "Add to Home Screen" -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+
   <title>Ambient Liquid Flow</title>
   <style>
     /* CSS Reset and Styling */
@@ -16,6 +22,8 @@
       overflow: hidden;
       background-color: #000;
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+      /* Prevent scrolling/bouncing on iPad */
+      touch-action: none; 
     }
 
     canvas {
@@ -40,7 +48,6 @@
       color: rgba(255, 255, 255, 0.9);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
       pointer-events: none;
-      /* Allows interacting with the canvas underneath if added later */
       user-select: none;
     }
 
@@ -60,6 +67,39 @@
       transition: opacity 1.5s ease-in-out;
       text-transform: uppercase;
     }
+
+    /* Fullscreen Toggle Button */
+    #fullscreen-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.6);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      outline: none;
+    }
+
+    #fullscreen-btn:hover, #fullscreen-btn:active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      transform: scale(1.05);
+    }
+
+    #fullscreen-btn svg {
+      width: 20px;
+      height: 20px;
+    }
   </style>
 </head>
 
@@ -74,201 +114,221 @@
     <div id="message">Take a deep breath</div>
   </div>
 
+  <!-- Fullscreen Button -->
+  <button id="fullscreen-btn" aria-label="Toggle Fullscreen">
+    <svg id="fs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+    </svg>
+  </button>
+
   <script>
-    // --- 1. IDLE UI LOGIC ---
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('clock').textContent = timeString;
+    // --- 1. FULLSCREEN LOGIC ---
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const fsIcon = document.getElementById('fs-icon');
+
+    fullscreenBtn.addEventListener('click', () => {
+      const doc = window.document;
+      const docEl = doc.documentElement;
+
+      // Check for fullscreen across different browsers (Standard + Safari)
+      const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+      const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+      if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+        // Enter Fullscreen
+        if(requestFullScreen) {
+            requestFullScreen.call(docEl);
         }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        const messages = [
-            "Take a deep breath",
-            "Relax your shoulders",
-            "Nothing to do right now",
-            "Just watch the colors flow",
-            "Be present in this moment",
-            "Let your mind wander"
-        ];
-        let msgIndex = 0;
-        const msgElement = document.getElementById('message');
-        
-        setInterval(() => {
-            msgElement.style.opacity = 0; // Fade out
-            setTimeout(() => {
-                msgIndex = (msgIndex + 1) % messages.length;
-                msgElement.textContent = messages[msgIndex];
-                msgElement.style.opacity = 0.7; // Fade in
-            }, 1500); // Wait for fade out to complete
-        }, 8000); // Change message every 8 seconds
-
-
-        // --- 2. WEBGL LIQUID SHADER LOGIC ---
-        const canvas = document.getElementById('glcanvas');
-        const gl = canvas.getContext('webgl');
-
-        if (!gl) {
-            alert('WebGL not supported in your browser.');
+        // Change icon to 'minimize'
+        fsIcon.innerHTML = `<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>`;
+      } else {
+        // Exit Fullscreen
+        if(cancelFullScreen) {
+            cancelFullScreen.call(doc);
         }
+        // Change icon back to 'maximize'
+        fsIcon.innerHTML = `<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>`;
+      }
+    });
 
-        // Vertex Shader: A simple script to draw a flat rectangle across the whole screen.
-        const vsSource = `
-            attribute vec2 a_position;
-            void main() {
-                gl_Position = vec4(a_position, 0.0, 1.0);
-            }
-        `;
+    // --- 2. IDLE UI LOGIC ---
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('clock').textContent = timeString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-        // Fragment Shader: The mathematical magic that creates the beautiful, infinite liquid.
-        // It uses Domain Warping and Fractional Brownian Motion (fBM).
-        const fsSource = `
-            precision highp float;
-            uniform vec2 u_resolution;
-            uniform float u_time;
+    const messages = [
+        "Take a deep breath",
+        "Relax your shoulders",
+        "Nothing to do right now",
+        "Just watch the colors flow",
+        "Be present in this moment",
+        "Let your mind wander"
+    ];
+    let msgIndex = 0;
+    const msgElement = document.getElementById('message');
+    
+    setInterval(() => {
+        msgElement.style.opacity = 0; // Fade out
+        setTimeout(() => {
+            msgIndex = (msgIndex + 1) % messages.length;
+            msgElement.textContent = messages[msgIndex];
+            msgElement.style.opacity = 0.7; // Fade in
+        }, 1500); // Wait for fade out to complete
+    }, 8000); // Change message every 8 seconds
 
-            // Random function
-            float random (in vec2 st) {
-                return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-            }
 
-            // 2D Noise function
-            float noise (in vec2 st) {
-                vec2 i = floor(st);
-                vec2 f = fract(st);
-                float a = random(i);
-                float b = random(i + vec2(1.0, 0.0));
-                float c = random(i + vec2(0.0, 1.0));
-                float d = random(i + vec2(1.0, 1.0));
-                vec2 u = f * f * (3.0 - 2.0 * f);
-                return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-            }
+    // --- 3. WEBGL LIQUID SHADER LOGIC ---
+    const canvas = document.getElementById('glcanvas');
+    const gl = canvas.getContext('webgl');
 
-            // Fractional Brownian Motion (fBM) to make the liquid look organic and layered
-            float fbm (in vec2 st) {
-                float v = 0.0;
-                float a = 0.5;
-                vec2 shift = vec2(100.0);
-                // Rotate to reduce axial bias
-                mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
-                for (int i = 0; i < 6; ++i) {
-                    v += a * noise(st);
-                    st = rot * st * 2.0 + shift;
-                    a *= 0.5;
-                }
-                return v;
-            }
+    if (!gl) {
+        alert('WebGL not supported in your browser.');
+    }
 
-            void main() {
-                // Normalize pixel coordinates to keep things perfectly proportioned
-                vec2 st = gl_FragCoord.xy / u_resolution.xy * 3.0;
-                st.x *= u_resolution.x / u_resolution.y;
+    // Vertex Shader
+    const vsSource = `
+        attribute vec2 a_position;
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    `;
 
-                // Slow down the time for a relaxing flow
-                float time = u_time * 0.15;
+    // Fragment Shader
+    const fsSource = `
+        precision highp float;
+        uniform vec2 u_resolution;
+        uniform float u_time;
 
-                // Domain warping: Passing noise into noise to create swirling liquid shapes
-                vec2 q = vec2(0.0);
-                q.x = fbm( st + vec2(0.0) );
-                q.y = fbm( st + vec2(1.0) );
-
-                vec2 r = vec2(0.0);
-                r.x = fbm( st + 1.0 * q + vec2(1.7, 9.2) + 0.15 * time );
-                r.y = fbm( st + 1.0 * q + vec2(8.3, 2.8) + 0.126 * time );
-
-                float f = fbm(st + r);
-
-                // Build a beautiful color palette (Deep midnight blues, purples, and cyans)
-                vec3 color = mix(
-                    vec3(0.05, 0.05, 0.2), // Dark deep blue background
-                    vec3(0.4, 0.1, 0.6),   // Rich purple
-                    clamp((f*f) * 4.0, 0.0, 1.0)
-                );
-
-                color = mix(color,
-                            vec3(0.1, 0.8, 0.9), // Bright cyan liquid highlights
-                            clamp(length(q), 0.0, 1.0));
-
-                color = mix(color,
-                            vec3(1.0, 0.5, 0.7), // Soft pink/magenta accents
-                            clamp(length(r.x), 0.0, 1.0));
-
-                // Add depth and contrast
-                vec3 finalColor = (f*f*f + 0.6*f*f + 0.5*f) * color;
-                
-                // Add a subtle vignette (darker edges)
-                vec2 center = gl_FragCoord.xy / u_resolution.xy - vec2(0.5);
-                finalColor *= 1.0 - dot(center, center) * 1.5;
-
-                gl_FragColor = vec4(finalColor, 1.0);
-            }
-        `;
-
-        // Shader Compilation Helper
-        function compileShader(gl, type, source) {
-            const shader = gl.createShader(type);
-            gl.shaderSource(shader, source);
-            gl.compileShader(shader);
-            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.error(gl.getShaderInfoLog(shader));
-                gl.deleteShader(shader);
-                return null;
-            }
-            return shader;
+        // Random function
+        float random (in vec2 st) {
+            return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
         }
 
-        const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vsSource);
-        const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fsSource);
-
-        const program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-        gl.useProgram(program);
-
-        // Set up the rectangle covering the screen
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            -1.0, -1.0,  1.0, -1.0,  -1.0,  1.0,
-            -1.0,  1.0,  1.0, -1.0,   1.0,  1.0
-        ]), gl.STATIC_DRAW);
-
-        const positionLocation = gl.getAttribLocation(program, "a_position");
-        gl.enableVertexAttribArray(positionLocation);
-        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-        // Get uniform locations
-        const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-        const timeLocation = gl.getUniformLocation(program, "u_time");
-
-        // Handle Window Resizing (Keeps the animation Crisp & HD!)
-        function resizeCanvas() {
-            // Using devicePixelRatio ensures it looks sharp on Retina/4K displays
-            const pixelRatio = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * pixelRatio;
-            canvas.height = window.innerHeight * pixelRatio;
-            gl.viewport(0, 0, canvas.width, canvas.height);
-            gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+        // 2D Noise function
+        float noise (in vec2 st) {
+            vec2 i = floor(st);
+            vec2 f = fract(st);
+            float a = random(i);
+            float b = random(i + vec2(1.0, 0.0));
+            float c = random(i + vec2(0.0, 1.0));
+            float d = random(i + vec2(1.0, 1.0));
+            vec2 u = f * f * (3.0 - 2.0 * f);
+            return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
 
-        // Render Loop
-        function render(time) {
-            // Pass the time (converted to seconds) to the shader
-            gl.uniform1f(timeLocation, time * 0.001);
+        // Fractional Brownian Motion (fBM)
+        float fbm (in vec2 st) {
+            float v = 0.0;
+            float a = 0.5;
+            vec2 shift = vec2(100.0);
+            mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
+            for (int i = 0; i < 6; ++i) {
+                v += a * noise(st);
+                st = rot * st * 2.0 + shift;
+                a *= 0.5;
+            }
+            return v;
+        }
+
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution.xy * 3.0;
+            st.x *= u_resolution.x / u_resolution.y;
+
+            float time = u_time * 0.15;
+
+            vec2 q = vec2(0.0);
+            q.x = fbm( st + vec2(0.0) );
+            q.y = fbm( st + vec2(1.0) );
+
+            vec2 r = vec2(0.0);
+            r.x = fbm( st + 1.0 * q + vec2(1.7, 9.2) + 0.15 * time );
+            r.y = fbm( st + 1.0 * q + vec2(8.3, 2.8) + 0.126 * time );
+
+            float f = fbm(st + r);
+
+            vec3 color = mix(
+                vec3(0.05, 0.05, 0.2), 
+                vec3(0.4, 0.1, 0.6),   
+                clamp((f*f) * 4.0, 0.0, 1.0)
+            );
+
+            color = mix(color,
+                        vec3(0.1, 0.8, 0.9), 
+                        clamp(length(q), 0.0, 1.0));
+
+            color = mix(color,
+                        vec3(1.0, 0.5, 0.7), 
+                        clamp(length(r.x), 0.0, 1.0));
+
+            vec3 finalColor = (f*f*f + 0.6*f*f + 0.5*f) * color;
             
-            // Draw the liquid
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
-            
-            // Loop infinitely
-            requestAnimationFrame(render);
+            vec2 center = gl_FragCoord.xy / u_resolution.xy - vec2(0.5);
+            finalColor *= 1.0 - dot(center, center) * 1.5;
+
+            gl_FragColor = vec4(finalColor, 1.0);
         }
-        
-        // Start animation
+    `;
+
+    function compileShader(gl, type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error(gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
+    }
+
+    const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1.0, -1.0,  1.0, -1.0,  -1.0,  1.0,
+        -1.0,  1.0,  1.0, -1.0,   1.0,  1.0
+    ]), gl.STATIC_DRAW);
+
+    const positionLocation = gl.getAttribLocation(program, "a_position");
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+    const timeLocation = gl.getUniformLocation(program, "u_time");
+
+    function resizeCanvas() {
+        const pixelRatio = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * pixelRatio;
+        canvas.height = window.innerHeight * pixelRatio;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+    }
+    
+    // Listen for resize and fullscreen changes to keep the canvas sharp
+    window.addEventListener('resize', resizeCanvas);
+    document.addEventListener("fullscreenchange", resizeCanvas);
+    document.addEventListener("webkitfullscreenchange", resizeCanvas);
+    resizeCanvas();
+
+    function render(time) {
+        gl.uniform1f(timeLocation, time * 0.001);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
         requestAnimationFrame(render);
+    }
+    
+    requestAnimationFrame(render);
 
   </script>
 </body>
