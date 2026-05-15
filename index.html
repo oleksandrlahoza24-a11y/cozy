@@ -49,6 +49,39 @@
       box-shadow: none;
       pointer-events: none;
       user-select: none;
+      transition: opacity 0.6s ease;
+    }
+    .idle-container.clock-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Double-tap hint */
+    #doubletap-hint {
+      position: absolute;
+      bottom: 64px;
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 1001;
+      opacity: 0;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      white-space: nowrap;
+    }
+    #doubletap-hint.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
     #clock {
@@ -89,9 +122,9 @@
       font-size: 1.1rem;
       font-weight: 300;
       letter-spacing: 3px;
-      margin-top: 12px;
+      margin-top: 16px;
       opacity: 0.7;
-      transition: opacity 1.5s ease;
+      transition: opacity 0.9s ease;
       text-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
 
@@ -112,7 +145,7 @@
       justify-content: center;
       cursor: pointer;
       color: rgba(255, 255, 255, 0.6);
-      transition: opacity 0.6s ease, transform 0.3s ease, background 0.3s ease;
+      transition: transform 0.3s ease, background 0.3s ease;
       z-index: 1000;
       outline: none;
     }
@@ -215,7 +248,7 @@
       justify-content: center;
       cursor: pointer;
       color: rgba(255, 255, 255, 0.6);
-      transition: opacity 0.6s ease, transform 0.3s ease, background 0.3s ease;
+      transition: transform 0.3s ease, background 0.3s ease;
       z-index: 1000;
       outline: none;
       font-size: 16px;
@@ -249,6 +282,33 @@
       color: #fff;
       transform: scale(1.05);
     }
+
+    /* Theme name toast */
+    #theme-toast {
+      position: absolute;
+      bottom: 64px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 0.75rem;
+      font-weight: 300;
+      letter-spacing: 2.5px;
+      color: rgba(255, 255, 255, 0.75);
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 1001;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    #theme-toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 
@@ -274,11 +334,17 @@
   <!-- Theme Button -->
   <button id="theme-btn" aria-label="Change Theme">🎨</button>
 
+  <!-- Theme Name Toast -->
+  <div id="theme-toast"></div>
+
   <!-- Battery Display -->
   <div id="battery">--</div>
 
   <!-- Time Display -->
   <div id="time-display">00:00</div>
+
+  <!-- Double-tap hint -->
+  <div id="doubletap-hint">Double-tap to hide clock</div>
 
   <!-- Ripple/Click Effect Layer -->
   <div id="ripple-container"></div>
@@ -317,10 +383,65 @@
       }
     });
 
-    // Tap anywhere in fullscreen to briefly reveal the buttons
     let uiTimeout;
+
+    // Double-tap to toggle clock visibility
+    let lastTapTime = 0;
+    let clockVisible = true;
+    const idleContainer = document.querySelector('.idle-container');
+    const doubletapHint = document.getElementById('doubletap-hint');
+    let hintTimer;
+
+    // Show hint on first load after 3s, only once
+    setTimeout(() => {
+      doubletapHint.classList.add('visible');
+      hintTimer = setTimeout(() => doubletapHint.classList.remove('visible'), 3000);
+    }, 3000);
+
+    // Tap anywhere — spawn ripple, handle double-tap, and in fullscreen reveal buttons
     document.addEventListener('click', (e) => {
-      if (isFullscreen() && e.target.id !== 'fullscreen-btn' && e.target.id !== 'theme-btn') {
+      const isBtn = e.target.id === 'fullscreen-btn' || e.target.id === 'theme-btn' ||
+                    e.target.closest('#fullscreen-btn') || e.target.closest('#theme-btn');
+
+      // Ripple effect (skip on buttons)
+      if (!isBtn) {
+        const rippleContainer = document.getElementById('ripple-container');
+        const ripple = document.createElement('div');
+        ripple.className = 'ripple';
+        const size = 80;
+        ripple.style.width = size + 'px';
+        ripple.style.height = size + 'px';
+        ripple.style.left = (e.clientX - size / 2) + 'px';
+        ripple.style.top = (e.clientY - size / 2) + 'px';
+        rippleContainer.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 1300);
+      }
+
+      // Double-tap detection (skip on buttons)
+      if (!isBtn) {
+        const now = Date.now();
+        if (now - lastTapTime < 350) {
+          // Double-tap fired
+          clockVisible = !clockVisible;
+          if (clockVisible) {
+            idleContainer.classList.remove('clock-hidden');
+            doubletapHint.textContent = 'Double-tap to hide clock';
+          } else {
+            idleContainer.classList.add('clock-hidden');
+            doubletapHint.textContent = 'Double-tap to show clock';
+          }
+          doubletapHint.classList.add('visible');
+          clearTimeout(hintTimer);
+          hintTimer = setTimeout(() => doubletapHint.classList.remove('visible'), 2000);
+          lastTapTime = 0;
+        } else {
+          lastTapTime = now;
+        }
+      }
+
+      // In fullscreen, show UI briefly
+      if (isFullscreen() && !isBtn) {
+        showUI();
         document.body.classList.add('show-ui');
         clearTimeout(uiTimeout);
         uiTimeout = setTimeout(() => document.body.classList.remove('show-ui'), 3000);
@@ -345,28 +466,38 @@
     const themeBtn = document.getElementById('theme-btn');
     
     const themes = [
-        { name: "Ocean" },
-        { name: "LavaLamp" },
-        { name: "Triangles" },
-        { name: "HexGrid" },
-        { name: "Rings" },
-        { name: "Sunset" },
-        { name: "Aurora" },
-        { name: "Nebula" },
-        { name: "Cyber" },
-        { name: "Forest" },
-        { name: "MidnightPulse" },
-        { name: "Charged" },
-        { name: "Energized" },
-        { name: "DeepSea" },
-        { name: "Vortex" },
-        ];
-    
+        { name: "Ocean",        label: "Ocean" },
+        { name: "LavaLamp",     label: "Lava Lamp" },
+        { name: "Triangles",    label: "Triangles" },
+        { name: "HexGrid",      label: "Hex Grid" },
+        { name: "Rings",        label: "Rings" },
+        { name: "Sunset",       label: "Sunset" },
+        { name: "Aurora",       label: "Aurora" },
+        { name: "Nebula",       label: "Nebula" },
+        { name: "Cyber",        label: "Cyber Grid" },
+        { name: "Forest",       label: "Forest" },
+        { name: "MidnightPulse",label: "Midnight Pulse" },
+        { name: "Charged",      label: "Charged" },
+        { name: "Energized",    label: "Energized" },
+        { name: "DeepSea",      label: "Deep Sea" },
+        { name: "Vortex",       label: "Vortex" },
+        { name: "SandDunes",    label: "Sand Dunes" },
+    ];
+
     let currentTheme = 0;
-    
+    let toastTimer;
+    const themeToast = document.getElementById('theme-toast');
+
+    function showThemeToast(label) {
+        themeToast.textContent = label;
+        themeToast.classList.add('visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => themeToast.classList.remove('visible'), 1800);
+    }
+
     themeBtn.addEventListener('click', () => {
         currentTheme = (currentTheme + 1) % themes.length;
-        console.log('Switched to theme: ' + themes[currentTheme].name);
+        showThemeToast(themes[currentTheme].label);
     });
 
     // --- 2. IDLE UI LOGIC ---
@@ -880,6 +1011,57 @@
         }
     `;
 
+    // 16. SAND DUNES — moiré interference of slow sine waves in desert tones
+    const shaderSandDunes = glslHelpers + `
+        void main() {
+            vec2 uv = gl_FragCoord.xy / u_resolution;
+            uv.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.07;
+
+            // Five low-frequency wave families crossing at different angles
+            float a0 = 0.0;
+            float a1 = 0.628;
+            float a2 = 1.257;
+            float a3 = 1.885;
+            float a4 = 2.513;
+
+            float w0 = sin(uv.x * cos(a0) * 4.5 + uv.y * sin(a0) * 4.5 + t * 1.1);
+            float w1 = sin(uv.x * cos(a1) * 5.2 + uv.y * sin(a1) * 5.2 + t * 0.9);
+            float w2 = sin(uv.x * cos(a2) * 3.8 + uv.y * sin(a2) * 3.8 + t * 1.3);
+            float w3 = sin(uv.x * cos(a3) * 6.1 + uv.y * sin(a3) * 6.1 + t * 0.7);
+            float w4 = sin(uv.x * cos(a4) * 4.9 + uv.y * sin(a4) * 4.9 + t * 1.0);
+
+            // Layered interference — product creates moiré ridge detail
+            float moire = (w0 + w1 + w2 + w3 + w4) * 0.2;          // -1..1 additive base
+            float ridge = w0 * w1 * 0.5 + w2 * w3 * 0.4 + w4 * 0.3; // -1..1 cross-product detail
+
+            float f = moire * 0.65 + ridge * 0.35;
+            f = f * 0.5 + 0.5; // remap to 0..1
+
+            // Slow large-scale gradient drift for depth
+            float drift = fbm(uv * 1.2 + vec2(t * 0.3, t * 0.2)) * 0.35;
+            f = clamp(f + drift - 0.15, 0.0, 1.0);
+
+            // Desert palette: deep terracotta → sand → dusty rose → pale gold
+            vec3 c0 = vec3(0.18, 0.07, 0.03); // deep shadow / terracotta
+            vec3 c1 = vec3(0.52, 0.28, 0.12); // warm mid-sand
+            vec3 c2 = vec3(0.82, 0.58, 0.32); // bright sand crest
+            vec3 c3 = vec3(0.72, 0.45, 0.38); // dusty rose hollow
+            vec3 c4 = vec3(0.94, 0.82, 0.58); // pale gold highlight
+
+            vec3 col = mix(c0, c1, smoothstep(0.0,  0.3,  f));
+            col      = mix(col, c3, smoothstep(0.25, 0.45, f));
+            col      = mix(col, c2, smoothstep(0.4,  0.65, f));
+            col      = mix(col, c4, smoothstep(0.65, 1.0,  f));
+
+            // Very subtle vignette to ground edges
+            vec2 ctr = gl_FragCoord.xy / u_resolution - 0.5;
+            col *= 1.0 - dot(ctr, ctr) * 0.6;
+
+            gl_FragColor = vec4(col, 1.0);
+        }
+    `;
+
     // Map theme names to shaders
     const shaderSources = {
         "Ocean":         shaderOcean,
@@ -896,7 +1078,8 @@
         "Charged":       shaderCharged,
         "Energized":     shaderEnergized,
         "DeepSea":       shaderDeepSea,
-        "Vortex":        shaderVortex
+        "Vortex":        shaderVortex,
+        "SandDunes":     shaderSandDunes
     };
 
     function compileShader(gl, type, source) {
