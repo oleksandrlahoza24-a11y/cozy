@@ -26,7 +26,7 @@
       touch-action: none;
     }
 
-    canvas {
+    #glcanvas {
       display: block;
       width: 100vw;
       height: 100vh;
@@ -505,6 +505,109 @@
       color: rgba(255,255,255,0.35);
     }
 
+    /* Update Log pane */
+    .update-log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 2px 0;
+    }
+    .update-entry {
+      padding: 14px 0 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .update-entry:last-child { border-bottom: none; }
+    .update-entry-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .update-version {
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 2.5px;
+      color: rgba(180,140,255,0.9);
+      text-transform: uppercase;
+    }
+    .update-date {
+      font-size: 0.62rem;
+      font-weight: 300;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.25);
+    }
+    .update-items {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .update-items li {
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.55);
+      padding-left: 14px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .update-items li::before {
+      content: '·';
+      position: absolute;
+      left: 4px;
+      color: rgba(255,255,255,0.25);
+    }
+    /* Animated theme name tags inside update log — CSS background-clip text */
+    .theme-tag {
+      display: inline;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      font-size: inherit;
+      text-transform: uppercase;
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      white-space: nowrap;
+      animation-duration: 4s;
+      animation-timing-function: ease;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+    @keyframes theme-shift { 0%{background-position:0% 50%} 100%{background-position:100% 50%} }
+
+    /* Per-theme gradient palettes */
+    .theme-tag[data-theme="Ocean"]        { background-image: linear-gradient(135deg,#0a3fff,#00e5ff,#7b2fff,#ff6eb4,#00e5ff); animation-name: theme-shift; }
+    .theme-tag[data-theme="LavaLamp"]     { background-image: linear-gradient(135deg,#ff2200,#ff8800,#ff0055,#ff4400,#ffcc00); animation-name: theme-shift; animation-duration:3s; }
+    .theme-tag[data-theme="Triangles"]    { background-image: linear-gradient(135deg,#ff6ec7,#ffeb3b,#00e5ff,#a259ff,#ff6ec7); animation-name: theme-shift; }
+    .theme-tag[data-theme="HexGrid"]      { background-image: linear-gradient(135deg,#001f6e,#00aaff,#00ffee,#0044ff,#00ffee); animation-name: theme-shift; animation-duration:5s; }
+    .theme-tag[data-theme="Rings"]        { background-image: linear-gradient(135deg,#ff00cc,#3333ff,#00ffff,#ff00cc); animation-name: theme-shift; }
+    .theme-tag[data-theme="Sunset"]       { background-image: linear-gradient(135deg,#ff4500,#ff8c00,#ffd700,#ff6347,#ff4500); animation-name: theme-shift; animation-duration:6s; }
+    .theme-tag[data-theme="Aurora"]       { background-image: linear-gradient(135deg,#00ff88,#00ccff,#aa00ff,#00ff88,#00e5d0); animation-name: theme-shift; animation-duration:5s; }
+    .theme-tag[data-theme="Nebula"]       { background-image: linear-gradient(135deg,#7b00ff,#e040fb,#ff6ec7,#3d00c8,#e040fb); animation-name: theme-shift; }
+    .theme-tag[data-theme="Cyber"]        { background-image: linear-gradient(135deg,#00ff41,#003b00,#00ff41,#00e5ff,#00ff41); animation-name: theme-shift; animation-duration:3s; }
+    .theme-tag[data-theme="Forest"]       { background-image: linear-gradient(135deg,#1a4a00,#4caf50,#8bc34a,#2e7d32,#aed581); animation-name: theme-shift; animation-duration:7s; }
+    .theme-tag[data-theme="MidnightPulse"]{ background-image: linear-gradient(135deg,#0a0030,#3a00b8,#8000ff,#0a0030,#5500cc); animation-name: theme-shift; }
+    .theme-tag[data-theme="Charged"]      { background-image: linear-gradient(135deg,#ffe000,#ff8800,#ff2200,#ffe000); animation-name: theme-shift; animation-duration:2.5s; }
+    .theme-tag[data-theme="Energized"]    { background-image: linear-gradient(135deg,#00ffcc,#0088ff,#aa00ff,#00ffcc); animation-name: theme-shift; }
+    .theme-tag[data-theme="DeepSea"]      { background-image: linear-gradient(135deg,#001533,#005588,#00ccaa,#003355,#00ccaa); animation-name: theme-shift; animation-duration:6s; }
+    .theme-tag[data-theme="Vortex"]       { background-image: linear-gradient(135deg,#ff00ff,#6600ff,#00ccff,#ff00ff); animation-name: theme-shift; animation-duration:3s; }
+    .theme-tag[data-theme="SandDunes"]    { background-image: linear-gradient(135deg,#c8a96e,#e8c97a,#b07060,#f0d8a0,#c8a96e); animation-name: theme-shift; animation-duration:8s; }
+    .theme-tag[data-theme="Crystal"]      { background-image: linear-gradient(135deg,#8cd8ff,#e8f8ff,#0d2a5c,#8cd8ff,#e0f4ff); animation-name: theme-shift; animation-duration:4s; }
+    .theme-tag[data-theme="Ember"]        { background-image: linear-gradient(135deg,#120800,#e85800,#ffbf00,#e85800,#120800); animation-name: theme-shift; animation-duration:3s; }
+    .theme-tag[data-theme="Silk"]         { background-image: linear-gradient(135deg,#8c2d86,#2673b8,#da9dec,#4dccc0,#8c2d86); animation-name: theme-shift; animation-duration:5s; }
+    .theme-tag[data-theme="Static"]       { background-image: linear-gradient(135deg,#aaa,#fff,#666,#fff,#aaa); animation-name: theme-shift; animation-duration:1.5s; }
+    .theme-tag[data-theme="Petrol"]       { background-image: linear-gradient(135deg,#000508,#004433,#cc00aa,#0000aa,#004433); animation-name: theme-shift; animation-duration:5s; }
+    .theme-tag[data-theme="Candlelight"]  { background-image: linear-gradient(135deg,#3a0800,#cc5500,#ffb81c,#fff0b0,#ffb81c); animation-name: theme-shift; animation-duration:3s; }
+    .theme-tag[data-theme="Hearth"]       { background-image: linear-gradient(135deg,#0a0400,#551000,#cc3800,#ff9900,#cc3800); animation-name: theme-shift; animation-duration:3.5s; }
+    .theme-tag[data-theme="Honeydew"]     { background-image: linear-gradient(135deg,#374d1a,#608828,#d4b800,#f5ebb5,#d4b800); animation-name: theme-shift; animation-duration:6s; }
+    .theme-tag[data-theme="AutumnLeaves"] { background-image: linear-gradient(135deg,#290f00,#9e2d00,#e86800,#f5c800,#f0e898); animation-name: theme-shift; animation-duration:5s; }
+    .theme-tag[data-theme="WarmMilk"]     { background-image: linear-gradient(135deg,#f5cfc0,#fdf5e8,#f5d8cc,#fff8f0,#f5cfc0); animation-name: theme-shift; animation-duration:8s; }
+    .theme-tag[data-theme="Pixel"]        { background-image: linear-gradient(135deg,#ff00ff,#00ffff,#ffff00,#ff00aa,#00ffff); animation-name: theme-shift; animation-duration:2s; }
+
     /* Continue button */
     #splash-continue {
       margin-top: 28px;
@@ -735,6 +838,7 @@
       <div class="splash-tabs">
         <button class="splash-tab active" data-tab="settings">Settings</button>
         <button class="splash-tab" data-tab="credits">Credits</button>
+        <button class="splash-tab" data-tab="updates">Updates</button>
       </div>
 
       <!-- Settings Pane -->
@@ -766,6 +870,29 @@
         </div>
         <div class="theme-grid" id="theme-grid"></div>
 
+        <div class="settings-row">
+          <div class="settings-label">Auto-Shuffle Themes
+            <small>Automatically cycle themes on a timer</small>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="setting-shuffle">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="settings-row" id="shuffle-interval-row" style="display:none">
+          <div class="settings-label">Shuffle Every
+            <small>How often to change themes</small>
+          </div>
+          <select id="shuffle-interval" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.8);font-size:0.75rem;letter-spacing:1px;padding:6px 10px;font-family:inherit;cursor:pointer;outline:none;">
+            <option value="1">1 min</option>
+            <option value="2">2 min</option>
+            <option value="5" selected>5 min</option>
+            <option value="10">10 min</option>
+            <option value="30">30 min</option>
+          </select>
+        </div>
+
         <div class="splash-divider" style="margin:20px 0 16px"></div>
         <div class="settings-label" style="margin-bottom:10px">Media Access
           <small>Enables photo themes that use your images</small>
@@ -786,6 +913,11 @@
             <div class="credit-role">Fixed a bunch of bugs &amp; added features</div>
           </div>
         </div>
+      </div>
+
+      <!-- Update Log Pane -->
+      <div class="splash-pane" id="pane-updates">
+        <div class="update-log-list" id="update-log-list"></div>
       </div>
 
       <button id="splash-continue">Continue</button>
@@ -983,9 +1115,15 @@
         { name: "Ember",        label: "Ember" },
         { name: "Silk",         label: "Silk" },
         { name: "Static",       label: "Static" },
-        { name: "Petrol",       label: "Petrol" },
-        { name: "PhotoStrip",   label: "Photo Strip",  isPhoto: true },
-        { name: "PhotoMosaic",  label: "Photo Mosaic", isPhoto: true },
+        { name: "Petrol",        label: "Petrol" },
+        { name: "Candlelight",   label: "Candlelight" },
+        { name: "Hearth",        label: "Hearth" },
+        { name: "Honeydew",      label: "Honeydew" },
+        { name: "AutumnLeaves",  label: "Autumn" },
+        { name: "WarmMilk",      label: "Warm Milk" },
+        { name: "Pixel",         label: "Pixel" },
+        { name: "PhotoStrip",    label: "Photo Strip",  isPhoto: true },
+        { name: "PhotoMosaic",   label: "Photo Mosaic", isPhoto: true },
     ];
 
     let currentTheme = 0;
@@ -999,9 +1137,22 @@
         toastTimer = setTimeout(() => themeToast.classList.remove('visible'), 1800);
     }
 
+    function switchTheme(dir) {
+        currentTheme = (currentTheme + dir + themes.length) % themes.length;
+        document.querySelectorAll('.theme-chip').forEach((c, i) => {
+            c.classList.toggle('selected', i === currentTheme);
+        });
+        const ct = themes[currentTheme];
+        showThemeToast(ct.label);
+        if (ct.isPhoto) {
+            activatePhotoTheme(ct.name);
+        } else {
+            stopPhotoThemes();
+        }
+    }
+
     themeBtn.addEventListener('click', () => {
-        currentTheme = (currentTheme + 1) % themes.length;
-        showThemeToast(themes[currentTheme].label);
+        switchTheme(1);
     });
 
     // --- 2. IDLE UI LOGIC ---
@@ -1098,6 +1249,119 @@
             splashPanes.forEach(p => p.classList.remove('active'));
             tab.classList.add('active');
             document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // ===================== UPDATE LOG =====================
+    const updateLog = [
+        {
+            version: "v1.3",
+            date: "May 2026",
+            items: [
+                "Added {Pixel} theme — retro chunky pixel grid with shifting colours",
+                "Added Update Log tab with animated theme name tags",
+                "Theme names in updates glow with their own visual effect"
+            ]
+        },
+        {
+            version: "v1.2",
+            date: "May 2026",
+            items: [
+                "5 new cozy themes: {Candlelight}, {Hearth}, {Honeydew}, {Autumn}, {Warm Milk}",
+                "Added Auto-Shuffle — cycle themes automatically on a timer",
+                "Fixed theme button not stopping photo themes on switch",
+                "Fixed swipe & theme button chip sync now using shared switchTheme()",
+                "Removed dead duplicate theme button listener"
+            ]
+        },
+        {
+            version: "v1.1",
+            date: "Apr 2026",
+            items: [
+                "Added {Ember}, {Silk}, {Static}, {Petrol} themes",
+                "Added {Crystal} and {Sand Dunes} themes",
+                "Photo Strip and Photo Mosaic themes with your own photos",
+                "Wake lock keeps screen on while ambient flow is active",
+                "Swipe left/right gesture to change themes",
+                "Settings panel with clock, messages, and theme selector"
+            ]
+        },
+        {
+            version: "v1.0",
+            date: "Mar 2026",
+            items: [
+                "Initial release with {Ocean}, {Aurora}, {Nebula}, {Sunset} themes",
+                "Lava Lamp, Hex Grid, Rings, Triangles, Cyber Grid, Forest",
+                "Clock overlay with date, seconds and AM/PM",
+                "Double-tap anywhere to hide or show the clock",
+                "Battery indicator and fullscreen toggle",
+                "Ambient messages that fade in and out"
+            ]
+        }
+    ];
+
+    // Map theme labels (lowercase) → theme name key for shader lookup
+    function themeTagLabelToName(word) {
+        const map = {};
+        themes.forEach(t => {
+            map[t.label.toLowerCase()] = t.name;
+            map[t.name.toLowerCase()]  = t.name;
+        });
+        // Also map common shorthand words used in log text
+        const extra = {
+            'ocean':'Ocean','aurora':'Aurora','nebula':'Nebula','sunset':'Sunset',
+            'lava lamp':'LavaLamp','hex grid':'HexGrid','rings':'Rings','triangles':'Triangles',
+            'cyber grid':'Cyber','forest':'Forest','midnight pulse':'MidnightPulse',
+            'charged':'Charged','energized':'Energized','deep sea':'DeepSea','vortex':'Vortex',
+            'sand dunes':'SandDunes','crystal':'Crystal','ember':'Ember','silk':'Silk',
+            'static':'Static','petrol':'Petrol','candlelight':'Candlelight','hearth':'Hearth',
+            'honeydew':'Honeydew','autumn':'AutumnLeaves','warm milk':'WarmMilk','pixel':'Pixel'
+        };
+        return map[word.toLowerCase()] || extra[word.toLowerCase()] || null;
+    }
+
+    // Theme tag text effects are handled purely via CSS background-clip: text
+    // (No WebGL per-tag — multiple WebGL contexts would kill the main canvas context)
+
+    // Build the update log HTML with theme tags
+    function buildUpdateLog() {
+        const container = document.getElementById('update-log-list');
+        if (!container) return;
+        container.innerHTML = '';
+        updateLog.forEach(entry => {
+            const div = document.createElement('div');
+            div.className = 'update-entry';
+            const header = document.createElement('div');
+            header.className = 'update-entry-header';
+            header.innerHTML = `<span class="update-version">${entry.version}</span><span class="update-date">${entry.date}</span>`;
+            div.appendChild(header);
+            const ul = document.createElement('ul');
+            ul.className = 'update-items';
+            entry.items.forEach(item => {
+                const li = document.createElement('li');
+                // Replace {ThemeName} with animated canvas tags
+                li.innerHTML = item.replace(/\{([^}]+)\}/g, (_, word) => {
+                    const name = themeTagLabelToName(word);
+                    if (!name) return `<strong>${word}</strong>`;
+                    return `<span class="theme-tag" data-theme="${name}">${word}</span>`;
+                });
+                ul.appendChild(li);
+            });
+            div.appendChild(ul);
+            container.appendChild(div);
+        });
+        // CSS background-clip: text handles the animated theme colours — no extra setup needed
+    }
+
+    // Build on first open of Updates tab
+    let updateLogBuilt = false;
+    document.querySelectorAll('.splash-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (tab.dataset.tab === 'updates' && !updateLogBuilt) {
+                updateLogBuilt = true;
+                // Small delay so the pane is visible and has dimensions
+                setTimeout(buildUpdateLog, 80);
+            }
         });
     });
 
@@ -1252,11 +1516,30 @@
         requestAnimationFrame(() => splash.classList.remove('hidden'));
     });
 
-    // --- Override theme switching to handle photo themes ---
-    themeBtn.addEventListener('click', () => {
-        // handled below — we re-wire it
+    // --- Theme Auto-Shuffle ---
+    let shuffleIntervalId = null;
+    function startShuffle(minutes) {
+        if (shuffleIntervalId) clearInterval(shuffleIntervalId);
+        shuffleIntervalId = setInterval(() => switchTheme(1), minutes * 60 * 1000);
+    }
+    function stopShuffle() {
+        if (shuffleIntervalId) { clearInterval(shuffleIntervalId); shuffleIntervalId = null; }
+    }
+    const settingShuffle = document.getElementById('setting-shuffle');
+    const shuffleIntervalSelect = document.getElementById('shuffle-interval');
+    settingShuffle.addEventListener('change', () => {
+        if (settingShuffle.checked) {
+            startShuffle(parseInt(shuffleIntervalSelect.value, 10));
+        } else {
+            stopShuffle();
+        }
     });
-    // (themeBtn listener already added above; we override the action here via render loop check)
+    shuffleIntervalSelect.addEventListener('change', () => {
+        if (settingShuffle.checked) startShuffle(parseInt(shuffleIntervalSelect.value, 10));
+    });
+    settingShuffle.addEventListener('change', () => {
+        document.getElementById('shuffle-interval-row').style.display = settingShuffle.checked ? 'flex' : 'none';
+    });
 
     // --- Wake Lock ---
     let wakeLock = null;
@@ -1287,18 +1570,7 @@
         // Only trigger on clear horizontal swipe (>60px, more horizontal than vertical)
         if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
             const dir = dx < 0 ? 1 : -1;
-            currentTheme = (currentTheme + dir + themes.length) % themes.length;
-            // Sync chip selection
-            document.querySelectorAll('.theme-chip').forEach((c, i) => {
-                c.classList.toggle('selected', i === currentTheme);
-            });
-            const ct = themes[currentTheme];
-            showThemeToast(ct.label);
-            if (ct.isPhoto) {
-                activatePhotoTheme(ct.name);
-            } else {
-                stopPhotoThemes();
-            }
+            switchTheme(dir);
         }
     }, { passive: true });
 
@@ -1927,6 +2199,164 @@
         }
     `;
 
+    // 22. CANDLELIGHT — warm amber flame glow with slow pulse
+    const shaderCandlelight = glslHelpers + `
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution * 3.0;
+            st.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.12;
+            vec2 q = vec2(fbm(st + t * 0.6), fbm(st + vec2(2.1, 3.7) + t * 0.5));
+            float f = fbm(st + 2.0 * q + t * 0.3);
+            // Flame flicker
+            float flicker = sin(u_time * 7.3) * 0.03 + sin(u_time * 4.1) * 0.02 + 1.0;
+            vec3 deep   = vec3(0.08, 0.02, 0.01);
+            vec3 amber  = vec3(0.85, 0.35, 0.04);
+            vec3 gold   = vec3(1.0,  0.72, 0.18);
+            vec3 cream  = vec3(1.0,  0.95, 0.72);
+            vec3 col = mix(deep,  amber, smoothstep(0.0, 0.4, f));
+            col      = mix(col,   gold,  smoothstep(0.35, 0.65, f));
+            col      = mix(col,   cream, smoothstep(0.6,  0.85, f));
+            col     *= flicker;
+            // Warm vignette
+            vec2 ctr = gl_FragCoord.xy / u_resolution - 0.5;
+            col *= 1.0 - dot(ctr, ctr) * 1.4;
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
+    // 23. HEARTH — deep fireplace red-orange with dark edges
+    const shaderHearth = glslHelpers + `
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution * 2.5;
+            st.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.08;
+            vec2 q = vec2(fbm(st + t), fbm(st + vec2(5.2, 1.3) + t * 0.9));
+            vec2 r = vec2(fbm(st + q + vec2(1.7, 9.2) + 0.15 * t), fbm(st + q + vec2(8.3, 2.8) + 0.13 * t));
+            float f = fbm(st + 2.2 * r);
+            // Rising heat shimmer
+            float shimmer = fbm(vec2(st.x * 3.0, st.y * 1.5 + u_time * 0.5));
+            f = mix(f, shimmer, 0.25);
+            vec3 char_  = vec3(0.04, 0.02, 0.01);
+            vec3 coal   = vec3(0.22, 0.05, 0.02);
+            vec3 flame  = vec3(0.9,  0.22, 0.02);
+            vec3 hot    = vec3(1.0,  0.60, 0.08);
+            vec3 col = mix(char_, coal,  smoothstep(0.0,  0.3,  f));
+            col      = mix(col,   flame, smoothstep(0.28, 0.55, f));
+            col      = mix(col,   hot,   smoothstep(0.52, 0.78, f));
+            vec2 ctr = gl_FragCoord.xy / u_resolution - 0.5;
+            col *= 1.0 - dot(ctr, ctr) * 1.1;
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
+    // 24. HONEYDEW — soft green-gold like sunlit leaves and honey
+    const shaderHoneydew = glslHelpers + `
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution * 2.8;
+            st.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.10;
+            vec2 q = vec2(fbm(st + t * 0.7), fbm(st + vec2(3.1, 4.8) + t * 0.6));
+            float f = fbm(st + 1.8 * q);
+            float ripple = sin(f * 12.0 + t * 1.5) * 0.5 + 0.5;
+            vec3 sage    = vec3(0.38, 0.48, 0.28);
+            vec3 moss    = vec3(0.22, 0.32, 0.16);
+            vec3 honey   = vec3(0.88, 0.72, 0.22);
+            vec3 cream   = vec3(0.96, 0.92, 0.72);
+            vec3 col = mix(moss,  sage,  smoothstep(0.0,  0.35, f));
+            col      = mix(col,   honey, smoothstep(0.32, 0.62, f));
+            col      = mix(col,   cream, smoothstep(0.58, 0.85, f));
+            col      = mix(col, col * 1.12, ripple * 0.3);
+            vec2 ctr = gl_FragCoord.xy / u_resolution - 0.5;
+            col *= 0.88 + 0.12 * (1.0 - dot(ctr, ctr) * 1.8);
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
+    // 25. AUTUMN LEAVES — russet, orange, gold swirling fall palette
+    const shaderAutumnLeaves = glslHelpers + `
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution * 3.2;
+            st.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.09;
+            vec2 q = vec2(fbm(st + vec2(0.0, t * 0.8)), fbm(st + vec2(4.2, 2.1) + t * 0.7));
+            vec2 r = vec2(fbm(st + q + vec2(1.7, 9.2) + 0.12 * t), fbm(st + q + vec2(8.3, 2.8) + 0.11 * t));
+            float f = fbm(st + 2.0 * r);
+            vec3 bark   = vec3(0.16, 0.09, 0.04);
+            vec3 russet = vec3(0.62, 0.18, 0.06);
+            vec3 orange = vec3(0.90, 0.42, 0.08);
+            vec3 gold   = vec3(0.96, 0.78, 0.18);
+            vec3 pale   = vec3(0.98, 0.92, 0.62);
+            vec3 col = mix(bark,   russet, smoothstep(0.0,  0.28, f));
+            col      = mix(col,    orange, smoothstep(0.25, 0.50, f));
+            col      = mix(col,    gold,   smoothstep(0.47, 0.70, f));
+            col      = mix(col,    pale,   smoothstep(0.68, 0.90, f));
+            vec2 ctr = gl_FragCoord.xy / u_resolution - 0.5;
+            col *= 1.0 - dot(ctr, ctr) * 0.9;
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
+    // 26. WARM MILK — creamy off-whites and pale blush, ultra soft
+    const shaderWarmMilk = glslHelpers + `
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution * 2.2;
+            st.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.07;
+            vec2 q = vec2(fbm(st + t * 0.5), fbm(st + vec2(2.8, 3.5) + t * 0.45));
+            float f = fbm(st + 1.5 * q);
+            float swirl = fbm(st * 1.4 + q * 2.0 + t * 0.3);
+            vec3 cream  = vec3(0.97, 0.93, 0.84);
+            vec3 blush  = vec3(0.96, 0.82, 0.76);
+            vec3 ivory  = vec3(0.99, 0.97, 0.90);
+            vec3 peach  = vec3(0.95, 0.78, 0.64);
+            vec3 col = mix(blush, cream,  smoothstep(0.0,  0.45, f));
+            col      = mix(col,   ivory,  smoothstep(0.42, 0.72, f));
+            col      = mix(col,   peach,  smoothstep(0.55, 0.75, swirl));
+            // Keep it bright and soft — no dark vignette
+            vec2 ctr = gl_FragCoord.xy / u_resolution - 0.5;
+            col *= 0.93 + 0.07 * (1.0 - dot(ctr, ctr) * 1.0);
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
+    // 27. PIXEL — retro chunky pixel grid with shifting color palette
+    const shaderPixel = glslHelpers + `
+        void main() {
+            vec2 res  = u_resolution;
+            float t   = u_time * 0.6;
+            // Pixel block size: 12 logical pixels
+            float blockSize = 12.0;
+            vec2 pixel = floor(gl_FragCoord.xy / blockSize) * blockSize;
+            vec2 uv    = pixel / res;
+            uv.x      *= res.x / res.y;
+
+            // Each block gets a stable random seed
+            float seed = random(floor(gl_FragCoord.xy / blockSize));
+
+            // Slow drift noise per block
+            float drift = fbm(uv * 1.8 + vec2(t * 0.25 + seed * 6.28, seed * 3.14));
+
+            // Hue cycling: each block offset by its seed
+            float hue = drift * 3.14159 * 2.0 + seed * 6.28 + t * 0.4;
+            vec3 col  = 0.5 + 0.5 * cos(vec3(hue, hue + 2.094, hue + 4.189));
+
+            // Quantise brightness to 4 levels for crunchy retro feel
+            col = floor(col * 4.0) / 4.0;
+
+            // Dark grid lines between blocks
+            vec2 frac = fract(gl_FragCoord.xy / blockSize);
+            float grid = step(frac.x, 0.06) + step(frac.y, 0.06);
+            grid      += step(1.0 - frac.x, 0.06) + step(1.0 - frac.y, 0.06);
+            col       *= 1.0 - clamp(grid, 0.0, 1.0) * 0.55;
+
+            // Slight scanline shimmer
+            float scan = sin(gl_FragCoord.y * 0.5 - t * 2.0) * 0.04 + 0.96;
+            col       *= scan;
+
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
     // Map theme names to shaders
     const shaderSources = {
         "Ocean":         shaderOcean,
@@ -1949,7 +2379,13 @@
         "Ember":         shaderEmber,
         "Silk":          shaderSilk,
         "Static":        shaderStatic,
-        "Petrol":        shaderPetrol
+        "Petrol":        shaderPetrol,
+        "Candlelight":   shaderCandlelight,
+        "Hearth":        shaderHearth,
+        "Honeydew":      shaderHoneydew,
+        "AutumnLeaves":  shaderAutumnLeaves,
+        "WarmMilk":      shaderWarmMilk,
+        "Pixel":         shaderPixel
     };
 
     function compileShader(gl, type, source) {
