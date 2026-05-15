@@ -80,7 +80,7 @@
       justify-content: center;
       cursor: pointer;
       color: rgba(255, 255, 255, 0.6);
-      transition: all 0.3s ease;
+      transition: opacity 0.6s ease, transform 0.3s ease, background 0.3s ease;
       z-index: 1000;
       outline: none;
     }
@@ -97,9 +97,47 @@
       height: 16px;
     }
 
-    /* Hide idle container in fullscreen */
-    body:fullscreen .idle-container {
+    /* Auto-hide UI elements */
+    #fullscreen-btn, #theme-btn, #battery {
+      opacity: 1;
+      transition: opacity 0.6s ease;
+    }
+    body.ui-hidden #fullscreen-btn,
+    body.ui-hidden #theme-btn,
+    body.ui-hidden #battery {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Hide idle container in fullscreen — all browser prefixes */
+    body:fullscreen .idle-container,
+    body:-webkit-full-screen .idle-container,
+    body:-moz-full-screen .idle-container,
+    body:-ms-fullscreen .idle-container {
       display: none;
+    }
+
+    /* Hide buttons in fullscreen for total immersion */
+    body:fullscreen #fullscreen-btn,
+    body:-webkit-full-screen #fullscreen-btn,
+    body:fullscreen #theme-btn,
+    body:-webkit-full-screen #theme-btn,
+    body:fullscreen #battery,
+    body:-webkit-full-screen #battery {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.5s ease;
+    }
+
+    /* Tap anywhere to show buttons briefly in fullscreen */
+    body:fullscreen.show-ui #fullscreen-btn,
+    body:-webkit-full-screen.show-ui #fullscreen-btn,
+    body:fullscreen.show-ui #theme-btn,
+    body:-webkit-full-screen.show-ui #theme-btn,
+    body:fullscreen.show-ui #battery,
+    body:-webkit-full-screen.show-ui #battery {
+      opacity: 1;
+      pointer-events: all;
     }
 
     /* Battery Indicator */
@@ -144,10 +182,31 @@
       justify-content: center;
       cursor: pointer;
       color: rgba(255, 255, 255, 0.6);
-      transition: all 0.3s ease;
+      transition: opacity 0.6s ease, transform 0.3s ease, background 0.3s ease;
       z-index: 1000;
       outline: none;
       font-size: 16px;
+    }
+
+    /* Ripple effect container */
+    #ripple-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 500;
+      overflow: hidden;
+    }
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: rippleAnim 1.2s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      0%   { transform: scale(0); opacity: 0.7; }
+      100% { transform: scale(6); opacity: 0; }
     }
 
     #theme-btn:hover,
@@ -186,33 +245,64 @@
   <!-- Time Display -->
   <div id="time-display">00:00</div>
 
+  <!-- Ripple/Click Effect Layer -->
+  <div id="ripple-container"></div>
+
   <script>
     // --- 1. FULLSCREEN LOGIC ---
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     const fsIcon = document.getElementById('fs-icon');
 
+    function isFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    }
+
+    function enterFullscreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+      else if (document.msExitFullscreen) document.msExitFullscreen();
+    }
+
     fullscreenBtn.addEventListener('click', () => {
-      const doc = window.document;
-      const docEl = doc.documentElement;
-
-      // Check for fullscreen across different browsers (Standard + Safari)
-      const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-      const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-      if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-        // Enter Fullscreen
-        if(requestFullScreen) {
-            requestFullScreen.call(docEl);
-        }
-        // Change icon to 'minimize'
+      if (!isFullscreen()) {
+        enterFullscreen();
         fsIcon.innerHTML = `<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>`;
       } else {
-        // Exit Fullscreen
-        if(cancelFullScreen) {
-            cancelFullScreen.call(doc);
-        }
-        // Change icon back to 'maximize'
+        exitFullscreen();
         fsIcon.innerHTML = `<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>`;
+      }
+    });
+
+    // Tap anywhere in fullscreen to briefly reveal the buttons
+    let uiTimeout;
+    document.addEventListener('click', (e) => {
+      if (isFullscreen() && e.target.id !== 'fullscreen-btn' && e.target.id !== 'theme-btn') {
+        document.body.classList.add('show-ui');
+        clearTimeout(uiTimeout);
+        uiTimeout = setTimeout(() => document.body.classList.remove('show-ui'), 3000);
+      }
+    });
+
+    // Keep icon in sync if user exits fullscreen via Escape key
+    document.addEventListener('fullscreenchange', () => {
+      if (!isFullscreen()) {
+        fsIcon.innerHTML = `<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>`;
+        document.body.classList.remove('show-ui');
+      }
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      if (!isFullscreen()) {
+        fsIcon.innerHTML = `<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>`;
+        document.body.classList.remove('show-ui');
       }
     });
 
@@ -233,6 +323,7 @@
         { name: "MidnightPulse" },
         { name: "Charged" },
         { name: "Energized" },
+        { name: "DeepSea" },
         ];
     
     let currentTheme = 0;
@@ -646,6 +737,45 @@
         }
     `;
 
+    // 14. DEEP SEA — bioluminescent creatures, ink-drop blobs, deep blue darkness
+    const shaderDeepSea = glslHelpers + `
+        void main() {
+            vec2 uv = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
+            uv.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.22;
+
+            // Slow drifting ink blobs (dark teal/navy)
+            float field = 0.0;
+            field += blob(uv, vec2(sin(t*0.31)*0.6,  cos(t*0.21)*0.7),  0.11);
+            field += blob(uv, vec2(cos(t*0.42)*0.5,  sin(t*0.33)*0.55), 0.09);
+            field += blob(uv, vec2(sin(t*0.27)*0.45, cos(t*0.45)*0.65), 0.07);
+            field += blob(uv, vec2(cos(t*0.19)*0.7,  sin(t*0.38)*0.4),  0.10);
+            field += blob(uv, vec2(sin(t*0.55)*0.35, cos(t*0.29)*0.75), 0.06);
+            float blobMask = smoothstep(0.85, 1.3, field);
+            float glow     = smoothstep(0.4,  1.3, field) * 0.35;
+
+            // Bioluminescent sparkle dots using noise
+            vec2 sparkUV = uv * 6.0;
+            float spark = noise(sparkUV + vec2(t*0.4, t*0.3));
+            spark = pow(max(0.0, spark - 0.75), 3.0) * 8.0;
+
+            // Gentle caustic light ripples on the surface
+            float caustic = sin(uv.x*8.0 + t*1.2) * sin(uv.y*6.0 + t*0.9) * 0.5 + 0.5;
+            caustic *= smoothstep(0.8, 1.0, uv.y * 0.5 + 0.5) * 0.15;
+
+            vec3 bg       = mix(vec3(0.0, 0.01, 0.06), vec3(0.0, 0.04, 0.12), uv.y * 0.5 + 0.5);
+            vec3 blobCol  = mix(vec3(0.0, 0.25, 0.45), vec3(0.0, 0.5, 0.7), blobMask);
+            vec3 glowCol  = vec3(0.0, 0.4, 0.6);
+            vec3 sparkCol = vec3(0.3, 0.9, 1.0);
+
+            vec3 col = bg + glowCol*glow + blobCol*blobMask;
+            col += sparkCol * spark * 0.6;
+            col += vec3(0.1, 0.5, 0.8) * caustic;
+
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
     // Map theme names to shaders
     const shaderSources = {
         "Ocean":         shaderOcean,
@@ -660,7 +790,8 @@
         "Forest":        shaderForest,
         "MidnightPulse": shaderMidnight,
         "Charged":       shaderCharged,
-        "Energized":     shaderEnergized
+        "Energized":     shaderEnergized,
+        "DeepSea":       shaderDeepSea
     };
 
     function compileShader(gl, type, source) {
