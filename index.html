@@ -56,11 +56,43 @@
       font-weight: 200;
       letter-spacing: 8px;
       margin-bottom: 0;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      line-height: 1;
+    }
+    #clock-seconds {
+      font-size: 2rem;
+      font-weight: 200;
+      letter-spacing: 4px;
+      opacity: 0.4;
+      vertical-align: super;
+      margin-left: 4px;
+    }
+    #clock-ampm {
+      font-size: 1.2rem;
+      font-weight: 300;
+      letter-spacing: 4px;
+      opacity: 0.5;
+      margin-left: 8px;
+      vertical-align: baseline;
+    }
+    #date-display {
+      font-size: 0.85rem;
+      font-weight: 300;
+      letter-spacing: 4px;
+      opacity: 0.45;
+      margin-top: 6px;
+      text-transform: uppercase;
     }
 
     #message {
-      display: none;
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 300;
+      letter-spacing: 3px;
+      margin-top: 12px;
+      opacity: 0.7;
+      transition: opacity 1.5s ease;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
 
     /* Fullscreen Toggle Button */
@@ -100,13 +132,14 @@
     /* Auto-hide UI elements */
     #fullscreen-btn, #theme-btn, #battery {
       opacity: 1;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.25s ease;
     }
     body.ui-hidden #fullscreen-btn,
     body.ui-hidden #theme-btn,
     body.ui-hidden #battery {
       opacity: 0;
       pointer-events: none;
+      transition: opacity 1.2s ease;
     }
 
     /* Hide idle container in fullscreen — all browser prefixes */
@@ -203,6 +236,7 @@
       transform: scale(0);
       animation: rippleAnim 1.2s ease-out forwards;
       pointer-events: none;
+      background: var(--ripple-color, rgba(255,255,255,0.25));
     }
     @keyframes rippleAnim {
       0%   { transform: scale(0); opacity: 0.7; }
@@ -225,7 +259,8 @@
 
   <!-- The Idle Screen UI -->
   <div class="idle-container">
-    <div id="clock">00:00</div>
+    <div id="clock">00:00<span id="clock-seconds">00</span><span id="clock-ampm"></span></div>
+    <div id="date-display"></div>
     <div id="message">Take a deep breath</div>
   </div>
 
@@ -324,6 +359,7 @@
         { name: "Charged" },
         { name: "Energized" },
         { name: "DeepSea" },
+        { name: "Vortex" },
         ];
     
     let currentTheme = 0;
@@ -336,9 +372,23 @@
     // --- 2. IDLE UI LOGIC ---
     function updateClock() {
         const now = new Date();
-        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('clock').textContent = timeString;
-        document.getElementById('time-display').textContent = timeString;
+        const h = now.getHours();
+        const m = now.getMinutes();
+        const s = now.getSeconds();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        const hStr = String(h12).padStart(2, '0');
+        const mStr = String(m).padStart(2, '0');
+        const sStr = String(s).padStart(2, '0');
+        const clockEl = document.getElementById('clock');
+        // Update just the text node (first child) to avoid overwriting spans
+        clockEl.childNodes[0].nodeValue = hStr + ':' + mStr;
+        document.getElementById('clock-seconds').textContent = sStr;
+        document.getElementById('clock-ampm').textContent = ampm;
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        document.getElementById('date-display').textContent = days[now.getDay()] + '  ·  ' + months[now.getMonth()] + ' ' + now.getDate();
+        document.getElementById('time-display').textContent = hStr + ':' + mStr;
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -365,13 +415,35 @@
     }
     initBattery();
 
+    // Auto-hide UI after 2 seconds of no interaction
+    let hideUITimer;
+    function showUI() {
+        clearTimeout(hideUITimer);
+        document.body.classList.remove('ui-hidden');
+        hideUITimer = setTimeout(() => document.body.classList.add('ui-hidden'), 2000);
+    }
+    document.addEventListener('mousemove', showUI);
+    document.addEventListener('mousedown', showUI);
+    document.addEventListener('touchstart', showUI, { passive: true });
+    document.addEventListener('touchmove', showUI, { passive: true });
+    showUI();
+
     const messages = [
         "Take a deep breath",
         "Relax your shoulders",
         "Nothing to do right now",
         "Just watch the colors flow",
         "Be present in this moment",
-        "Let your mind wander"
+        "Let your mind wander",
+        "Slow down",
+        "You're exactly where you need to be",
+        "Let the noise fade away",
+        "Breathe in. Breathe out.",
+        "The colors never repeat",
+        "Close your eyes for a moment",
+        "Nothing is urgent right now",
+        "Soften your gaze",
+        "Drift"
     ];
     let msgIndex = 0;
     const msgElement = document.getElementById('message');
@@ -776,6 +848,38 @@
         }
     `;
 
+    // 15. VORTEX — hypnotic inward spiral with rotating color bands
+    const shaderVortex = glslHelpers + `
+        void main() {
+            vec2 uv = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;
+            uv.x *= u_resolution.x / u_resolution.y;
+            float t = u_time * 0.4;
+            float dist = length(uv);
+            float angle = atan(uv.y, uv.x);
+            // Spiral: angle shifts with distance and time
+            float spiral = angle + dist * 4.0 - t * 2.5;
+            // Radial waves layered
+            float wave1 = sin(spiral * 3.0) * 0.5 + 0.5;
+            float wave2 = sin(spiral * 5.0 + t) * 0.5 + 0.5;
+            float wave3 = sin(dist * 10.0 - t * 3.0) * 0.5 + 0.5;
+            float combined = wave1 * 0.5 + wave2 * 0.3 + wave3 * 0.2;
+            // Color bands: deep indigo through gold through white-hot core
+            vec3 c1 = vec3(0.04, 0.02, 0.18); // deep indigo
+            vec3 c2 = vec3(0.5, 0.1, 0.7);    // violet
+            vec3 c3 = vec3(0.95, 0.6, 0.05);  // gold
+            vec3 c4 = vec3(1.0, 0.95, 0.7);   // warm white
+            vec3 col = mix(c1, c2, clamp(combined * 1.5, 0.0, 1.0));
+            col = mix(col, c3, clamp((combined - 0.4) * 2.5, 0.0, 1.0));
+            col = mix(col, c4, clamp((combined - 0.75) * 4.0, 0.0, 1.0));
+            // Bright core pull
+            float core = exp(-dist * 3.5) * 0.9;
+            col += vec3(1.0, 0.9, 0.6) * core;
+            // Vignette edge
+            col *= 1.0 - smoothstep(0.6, 1.2, dist) * 0.7;
+            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+    `;
+
     // Map theme names to shaders
     const shaderSources = {
         "Ocean":         shaderOcean,
@@ -791,7 +895,8 @@
         "MidnightPulse": shaderMidnight,
         "Charged":       shaderCharged,
         "Energized":     shaderEnergized,
-        "DeepSea":       shaderDeepSea
+        "DeepSea":       shaderDeepSea,
+        "Vortex":        shaderVortex
     };
 
     function compileShader(gl, type, source) {
