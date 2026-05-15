@@ -527,6 +527,198 @@
       border-color: rgba(255,255,255,0.3);
       color: #fff;
     }
+
+    /* Permissions / allow-all button */
+    #btn-allow-all {
+      width: 100%;
+      padding: 11px 0;
+      margin-top: 4px;
+      background: rgba(180,140,255,0.1);
+      border: 1px solid rgba(180,140,255,0.3);
+      border-radius: 10px;
+      color: rgba(200,170,255,0.9);
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    #btn-allow-all:hover, #btn-allow-all:active {
+      background: rgba(180,140,255,0.2);
+      border-color: rgba(180,140,255,0.5);
+      color: #fff;
+    }
+    #btn-allow-all.granted {
+      background: rgba(100,220,140,0.1);
+      border-color: rgba(100,220,140,0.3);
+      color: rgba(140,240,170,0.9);
+    }
+    #perms-status {
+      font-size: 0.62rem;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+      margin-top: 6px;
+      min-height: 14px;
+    }
+
+    /* Photo overlay themes — rendered above canvas */
+    #photo-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+    }
+    #photo-overlay.active { display: block; }
+
+    /* Photo Strip theme */
+    .photo-strip-wrap {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 28vw;
+      overflow: hidden;
+    }
+    .photo-strip-wrap.left  { left: 0; }
+    .photo-strip-wrap.right { right: 0; }
+    .photo-strip-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px;
+      will-change: transform;
+    }
+    .photo-strip-img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      border-radius: 10px;
+      opacity: 0.75;
+    }
+    /* Fade edges of strips */
+    .photo-strip-wrap::before,
+    .photo-strip-wrap::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 80px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .photo-strip-wrap::before { top: 0;    background: linear-gradient(to bottom, #000, transparent); }
+    .photo-strip-wrap::after  { bottom: 0; background: linear-gradient(to top,   #000, transparent); }
+
+    /* Photo Mosaic theme */
+    #photo-mosaic {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      gap: 4px;
+    }
+    .mosaic-cell {
+      overflow: hidden;
+      position: relative;
+    }
+    .mosaic-cell img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      position: absolute;
+      inset: 0;
+    }
+    .mosaic-cell img.visible { opacity: 0.72; }
+
+    /* Settings reopen button */
+    #settings-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.6);
+      transition: transform 0.3s ease, background 0.3s ease;
+      z-index: 1000;
+      outline: none;
+      font-size: 15px;
+    }
+    #settings-btn:hover, #settings-btn:active {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      transform: scale(1.05);
+    }
+    body.ui-hidden #settings-btn {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.2s ease;
+    }
+    body:fullscreen #settings-btn,
+    body:-webkit-full-screen #settings-btn { opacity: 0; pointer-events: none; }
+    body:fullscreen.show-ui #settings-btn,
+    body:-webkit-full-screen.show-ui #settings-btn { opacity: 1; pointer-events: all; }
+
+    /* Wake lock indicator dot */
+    #wakelock-dot {
+      position: absolute;
+      top: 22px;
+      left: 20px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(100,220,140,0.7);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    #wakelock-dot.active { opacity: 1; }
+    body.ui-hidden #wakelock-dot { opacity: 0; }
+
+    /* Swipe hint */
+    #swipe-hint {
+      position: absolute;
+      bottom: 64px;
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 1001;
+      opacity: 0;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      white-space: nowrap;
+    }
+    #swipe-hint.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Splash panel scrollable for smaller screens */
+    .splash-panel {
+      max-height: 92vh;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .splash-panel::-webkit-scrollbar { display: none; }
   </style>
 </head>
 
@@ -573,6 +765,13 @@
           </div>
         </div>
         <div class="theme-grid" id="theme-grid"></div>
+
+        <div class="splash-divider" style="margin:20px 0 16px"></div>
+        <div class="settings-label" style="margin-bottom:10px">Media Access
+          <small>Enables photo themes that use your images</small>
+        </div>
+        <button id="btn-allow-all">📷 &nbsp; Allow Photo Access</button>
+        <div id="perms-status"></div>
       </div>
 
       <!-- Credits Pane -->
@@ -624,6 +823,25 @@
 
   <!-- Double-tap hint -->
   <div id="doubletap-hint">Double-tap to hide clock</div>
+
+  <!-- Swipe hint -->
+  <div id="swipe-hint">← Swipe to change theme →</div>
+
+  <!-- Settings reopen button -->
+  <button id="settings-btn" aria-label="Open Settings">⚙️</button>
+
+  <!-- Wake lock dot -->
+  <div id="wakelock-dot" title="Screen awake"></div>
+
+  <!-- Photo overlay (strips + mosaic rendered here) -->
+  <div id="photo-overlay">
+    <div id="photo-strip-left"  class="photo-strip-wrap left"><div  class="photo-strip-inner" id="strip-inner-left"></div></div>
+    <div id="photo-strip-right" class="photo-strip-wrap right"><div class="photo-strip-inner" id="strip-inner-right"></div></div>
+    <div id="photo-mosaic"></div>
+  </div>
+
+  <!-- Hidden file input for photo picker -->
+  <input type="file" id="photo-picker" accept="image/*" multiple style="display:none">
 
   <!-- Ripple/Click Effect Layer -->
   <div id="ripple-container"></div>
@@ -766,6 +984,8 @@
         { name: "Silk",         label: "Silk" },
         { name: "Static",       label: "Static" },
         { name: "Petrol",       label: "Petrol" },
+        { name: "PhotoStrip",   label: "Photo Strip",  isPhoto: true },
+        { name: "PhotoMosaic",  label: "Photo Mosaic", isPhoto: true },
     ];
 
     let currentTheme = 0;
@@ -851,12 +1071,18 @@
     const themeGrid = document.getElementById('theme-grid');
     const settingClock = document.getElementById('setting-clock');
     const settingMessages = document.getElementById('setting-messages');
+    const settingsBtn = document.getElementById('settings-btn');
+    const photoOverlay = document.getElementById('photo-overlay');
+    const photoPicker = document.getElementById('photo-picker');
+    const swipeHint = document.getElementById('swipe-hint');
+    let userPhotos = []; // stores object URLs of picked images
 
     // Build theme chips
     themes.forEach((theme, i) => {
         const chip = document.createElement('button');
         chip.className = 'theme-chip' + (i === 0 ? ' selected' : '');
         chip.textContent = theme.label;
+        if (theme.isPhoto) chip.title = 'Requires photo access';
         chip.addEventListener('click', () => {
             document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('selected'));
             chip.classList.add('selected');
@@ -875,22 +1101,206 @@
         });
     });
 
+    // --- Photo permission / picker ---
+    const btnAllowAll = document.getElementById('btn-allow-all');
+    const permsStatus = document.getElementById('perms-status');
+
+    btnAllowAll.addEventListener('click', () => {
+        photoPicker.click();
+    });
+
+    photoPicker.addEventListener('change', () => {
+        const files = Array.from(photoPicker.files);
+        if (!files.length) return;
+        // Revoke old URLs
+        userPhotos.forEach(u => URL.revokeObjectURL(u));
+        userPhotos = files.map(f => URL.createObjectURL(f));
+        btnAllowAll.textContent = '✓  ' + userPhotos.length + ' photo' + (userPhotos.length !== 1 ? 's' : '') + ' loaded';
+        btnAllowAll.classList.add('granted');
+        permsStatus.textContent = 'Photos ready · tap a photo theme to use them';
+        // If currently on a photo theme, refresh
+        const ct = themes[currentTheme];
+        if (ct && ct.isPhoto) activatePhotoTheme(ct.name);
+    });
+
+    // --- Photo theme rendering ---
+    let stripAnimId = null;
+    let mosaicIntervalId = null;
+
+    function stopPhotoThemes() {
+        photoOverlay.classList.remove('active');
+        if (stripAnimId) { cancelAnimationFrame(stripAnimId); stripAnimId = null; }
+        if (mosaicIntervalId) { clearInterval(mosaicIntervalId); mosaicIntervalId = null; }
+        document.getElementById('photo-mosaic').style.display = 'none';
+        document.getElementById('photo-strip-left').style.display = 'none';
+        document.getElementById('photo-strip-right').style.display = 'none';
+    }
+
+    function activatePhotoTheme(name) {
+        stopPhotoThemes();
+        if (!userPhotos.length) {
+            permsStatus.textContent = 'Add photos first using the button above';
+            return;
+        }
+        photoOverlay.classList.add('active');
+
+        if (name === 'PhotoStrip') {
+            document.getElementById('photo-strip-left').style.display = 'block';
+            document.getElementById('photo-strip-right').style.display = 'block';
+            buildStrip('strip-inner-left',  userPhotos, false);
+            buildStrip('strip-inner-right', userPhotos, true);
+            animateStrips();
+        } else if (name === 'PhotoMosaic') {
+            document.getElementById('photo-mosaic').style.display = 'grid';
+            buildMosaic();
+        }
+    }
+
+    function buildStrip(id, photos, reverse) {
+        const el = document.getElementById(id);
+        el.innerHTML = '';
+        // Duplicate photos for seamless loop
+        const pool = reverse ? [...photos].reverse() : photos;
+        const repeated = [...pool, ...pool, ...pool];
+        repeated.forEach(src => {
+            const img = document.createElement('img');
+            img.className = 'photo-strip-img';
+            img.src = src;
+            el.appendChild(img);
+        });
+    }
+
+    function animateStrips() {
+        const leftInner  = document.getElementById('strip-inner-left');
+        const rightInner = document.getElementById('strip-inner-right');
+        let leftY = 0, rightY = 0;
+        const speed = 0.4; // px per frame
+
+        function step() {
+            leftY  -= speed;
+            rightY += speed;
+            const leftH  = leftInner.scrollHeight / 3;
+            const rightH = rightInner.scrollHeight / 3;
+            if (Math.abs(leftY)  >= leftH)  leftY  = 0;
+            if (rightY >= rightH)            rightY = 0;
+            leftInner.style.transform  = `translateY(${leftY}px)`;
+            rightInner.style.transform = `translateY(${rightY}px)`;
+            stripAnimId = requestAnimationFrame(step);
+        }
+        stripAnimId = requestAnimationFrame(step);
+    }
+
+    function buildMosaic() {
+        const mosaic = document.getElementById('photo-mosaic');
+        mosaic.innerHTML = '';
+        const cols = 4, rows = 3;
+        mosaic.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        mosaic.style.gridTemplateRows    = `repeat(${rows}, 1fr)`;
+        const cells = cols * rows;
+        const imgs = [];
+        for (let i = 0; i < cells; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'mosaic-cell';
+            const img = document.createElement('img');
+            img.src = userPhotos[i % userPhotos.length];
+            img.className = 'visible';
+            cell.appendChild(img);
+            mosaic.appendChild(cell);
+            imgs.push({ cell, img });
+        }
+        // Cycle photos in random cells
+        mosaicIntervalId = setInterval(() => {
+            const pick = imgs[Math.floor(Math.random() * imgs.length)];
+            const nextSrc = userPhotos[Math.floor(Math.random() * userPhotos.length)];
+            pick.img.classList.remove('visible');
+            setTimeout(() => {
+                pick.img.src = nextSrc;
+                pick.img.classList.add('visible');
+            }, 1300);
+        }, 2200);
+    }
+
     // Continue button — apply settings and dismiss
     splashContinue.addEventListener('click', () => {
-        // Apply clock visibility
         if (!settingClock.checked) {
             idleContainer.classList.add('clock-hidden');
             clockVisible = false;
         }
-        // Apply message visibility
         if (!settingMessages.checked) {
             document.getElementById('message').style.display = 'none';
             document.getElementById('date-display').style.display = 'none';
         }
         splash.classList.add('hidden');
-        setTimeout(() => splash.style.display = 'none', 650);
+        setTimeout(() => { splash.style.display = 'none'; }, 650);
+
+        // If starting theme is a photo theme, activate it
+        const ct = themes[currentTheme];
+        if (ct && ct.isPhoto) activatePhotoTheme(ct.name);
+
         showUI();
+
+        // Show swipe hint once
+        setTimeout(() => {
+            swipeHint.classList.add('visible');
+            setTimeout(() => swipeHint.classList.remove('visible'), 3000);
+        }, 1500);
     });
+
+    // Settings button reopens splash
+    settingsBtn.addEventListener('click', () => {
+        splash.style.display = 'flex';
+        requestAnimationFrame(() => splash.classList.remove('hidden'));
+    });
+
+    // --- Override theme switching to handle photo themes ---
+    themeBtn.addEventListener('click', () => {
+        // handled below — we re-wire it
+    });
+    // (themeBtn listener already added above; we override the action here via render loop check)
+
+    // --- Wake Lock ---
+    let wakeLock = null;
+    const wlDot = document.getElementById('wakelock-dot');
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wlDot.classList.add('active');
+                wakeLock.addEventListener('release', () => { wlDot.classList.remove('active'); wakeLock = null; });
+            }
+        } catch(e) { /* not supported or denied */ }
+    }
+    requestWakeLock();
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && !wakeLock) requestWakeLock();
+    });
+
+    // --- Swipe gesture to change theme ---
+    let touchStartX = 0, touchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        // Only trigger on clear horizontal swipe (>60px, more horizontal than vertical)
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            const dir = dx < 0 ? 1 : -1;
+            currentTheme = (currentTheme + dir + themes.length) % themes.length;
+            // Sync chip selection
+            document.querySelectorAll('.theme-chip').forEach((c, i) => {
+                c.classList.toggle('selected', i === currentTheme);
+            });
+            const ct = themes[currentTheme];
+            showThemeToast(ct.label);
+            if (ct.isPhoto) {
+                activatePhotoTheme(ct.name);
+            } else {
+                stopPhotoThemes();
+            }
+        }
+    }, { passive: true });
 
     const messages = [
         "Take a deep breath",
@@ -1599,12 +2009,14 @@
 
     function render(time) {
         const theme = themes[currentTheme];
-        const prog = useProgram(theme.name);
-        const resLoc  = gl.getUniformLocation(prog, 'u_resolution');
-        const timeLoc = gl.getUniformLocation(prog, 'u_time');
-        gl.uniform2f(resLoc, canvas.width, canvas.height);
-        gl.uniform1f(timeLoc, time * 0.001);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        if (!theme.isPhoto) {
+            const prog = useProgram(theme.name);
+            const resLoc  = gl.getUniformLocation(prog, 'u_resolution');
+            const timeLoc = gl.getUniformLocation(prog, 'u_time');
+            gl.uniform2f(resLoc, canvas.width, canvas.height);
+            gl.uniform1f(timeLoc, time * 0.001);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
         requestAnimationFrame(render);
     }
 
